@@ -600,7 +600,9 @@ body{font-family:'Microsoft JhengHei','Segoe UI',sans-serif;background:#f0f2f5;m
   <div class="bottom-btns">
     <button class="btn-primary" id="calcBtn" onclick="calcScore()">🎯 計算分數 + 記錄成績</button>
     <button class="btn-secondary" onclick="resetQuiz()">🔄 重新作答</button>
+    <button onclick="testGasConnection()" style="background:#7B2D8B;color:#fff;border:none;border-radius:12px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">🔌 測試 GAS 連線</button>
   </div>
+  <div id="gasTestResult" style="margin-top:10px"></div>
 </div>
 
 </div><!-- /.app -->
@@ -609,7 +611,7 @@ body{font-family:'Microsoft JhengHei','Segoe UI',sans-serif;background:#f0f2f5;m
 // ══════════════════════════════════════════
 //  GAS URL
 // ══════════════════════════════════════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyJL16mVT-OoctKM4btVqfOyZBM3en6N-xqI8A_LMo_gUxTZvrZ9-Y7oK7HOiFHShpb/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzlthA9Ecfv1MVm7I0GuxieXb9NZo2mANnjKZkCvQsUUcvtTNByg4n1ibOTnDDW9Hci/exec";
 
 // ══════════════════════════════════════════
 //  QUESTIONS DATA
@@ -943,16 +945,42 @@ async function calcScore() {
     wrongTexts,
   };
 
+  // ── 先用 GET 測試連線，再用 POST 傳資料 ──
   try {
-    await fetch(GAS_URL, {
+    // Step 1：GET 健康檢查（確認 GAS 可連線）
+    const testRes = await fetch(GAS_URL + "?action=test");
+    if (!testRes.ok) throw new Error("GAS 回應狀態：" + testRes.status);
+    const testJson = await testRes.json();
+    if (testJson.status !== "ok") throw new Error("GAS 狀態異常：" + testJson.message);
+
+    // Step 2：POST 傳成績（用 text/plain 避免 preflight）
+    const postRes = await fetch(GAS_URL, {
       method:  "POST",
-      mode:    "no-cors",
-      headers: {"Content-Type":"text/plain"},
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
       body:    JSON.stringify(payload),
     });
-    statusEl.innerHTML = `<div class="status-box" style="background:#E8FFF8;border-color:#06D6A0;color:#06D6A0"><span style="font-size:16px">✅</span> 成績已成功記錄到 Google 試算表！學生：${escHtml(studentName)}，分數：${pct}分</div>`;
+    const postJson = await postRes.json();
+
+    if (postJson.status === "ok") {
+      statusEl.innerHTML = `<div class="status-box" style="background:#E8FFF8;border-color:#06D6A0;color:#06D6A0"><span style="font-size:16px">✅</span> 成績已記錄！學生：${escHtml(studentName)}，分數：${pct}分（第 ${postJson.row ? postJson.row-1 : "?"} 筆）</div>`;
+    } else {
+      throw new Error(postJson.message || "GAS 寫入失敗");
+    }
+
   } catch(err) {
-    statusEl.innerHTML = `<div class="status-box" style="background:#FFF0F3;border-color:#EF476F;color:#EF476F">⚠️ 上傳失敗，請確認網路連線或 GAS URL 設定。</div>`;
+    console.error("GAS 上傳失敗:", err);
+    // 若 CORS 擋住（舊部署設定），fallback 用 no-cors
+    try {
+      await fetch(GAS_URL, {
+        method:  "POST",
+        mode:    "no-cors",
+        headers: {"Content-Type": "text/plain"},
+        body:    JSON.stringify(payload),
+      });
+      statusEl.innerHTML = `<div class="status-box" style="background:#FFFBEE;border-color:#FFD166;color:#FF6B35">⚠️ 資料已送出（無法確認是否寫入成功）。錯誤：${escHtml(err.message)}<br>請在 Apps Script 執行「testPost」確認設定。</div>`;
+    } catch(err2) {
+      statusEl.innerHTML = `<div class="status-box" style="background:#FFF0F3;border-color:#EF476F;color:#EF476F">❌ 上傳失敗：${escHtml(err.message)}<br>請確認 GAS 部署時「誰可以存取」是否選「所有人」。</div>`;
+    }
   } finally {
     document.getElementById("calcBtn").disabled = false;
     document.getElementById("calcBtn").textContent = "🎯 計算分數 + 記錄成績";
@@ -969,6 +997,38 @@ function resetQuiz() {
   document.getElementById("scoreCard").style.display = "none";
   document.getElementById("scoreCard").innerHTML = "";
   renderQuiz();
+}
+
+// ══════════════════════════════════════════
+//  GAS 連線測試
+// ══════════════════════════════════════════
+async function testGasConnection() {
+  const el = document.getElementById("gasTestResult");
+  el.innerHTML = `<div class="status-box" style="background:#E8F4FA;border-color:#118AB2;color:#118AB2">⏳ 測試 GAS 連線中…</div>`;
+  try {
+    const res  = await fetch(GAS_URL + "?action=test");
+    const json = await res.json();
+    if (json.status === "ok") {
+      // 再測試資料筆數
+      const res2  = await fetch(GAS_URL + "?action=count");
+      const json2 = await res2.json();
+      el.innerHTML = `<div class="status-box" style="background:#E8FFF8;border-color:#06D6A0;color:#06D6A0">
+        ✅ GAS 連線正常！<br>
+        📊 試算表目前已有 <b>${json2.count || 0}</b> 筆學習記錄<br>
+        🕐 伺服器時間：${json.time || "N/A"}
+      </div>`;
+    } else {
+      throw new Error(json.message || "未知錯誤");
+    }
+  } catch(err) {
+    el.innerHTML = `<div class="status-box" style="background:#FFF0F3;border-color:#EF476F;color:#EF476F">
+      ❌ 連線失敗：${escHtml(err.message)}<br>
+      <b>請確認：</b><br>
+      1. GAS 已重新部署（使用新版本）<br>
+      2. 「誰可以存取」選的是「<b>所有人</b>」（不是「需登入 Google」）<br>
+      3. GAS URL 是最新部署的 URL
+    </div>`;
+  }
 }
 
 // ══════════════════════════════════════════
