@@ -1,721 +1,980 @@
-import { useState } from "react";
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第四單元：熱的作用與傳播｜國小五年級自然</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Microsoft JhengHei','Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh}
+.app{max-width:860px;margin:0 auto;padding:0 0 48px}
 
-const palette = {
-  orange: "#FF6B35",
-  yellow: "#FFD166",
-  green: "#06D6A0",
-  blue: "#118AB2",
-  pink: "#EF476F",
-  purple: "#7B2D8B",
-  lightOrange: "#FFF3EE",
-  lightYellow: "#FFFBEE",
-  lightGreen: "#E8FFF8",
-  lightBlue: "#E8F4FA",
-  lightPink: "#FFF0F3",
-  lightPurple: "#F5EEF8",
-  white: "#FFFFFF",
-  dark: "#2D3436",
-  gray: "#636E72",
-  lightGray: "#F8F9FA",
-};
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,#FF6B35 0%,#EF476F 50%,#7B2D8B 100%);padding:28px 24px 22px;border-radius:0 0 24px 24px;text-align:center;margin-bottom:20px}
+.hero-emoji{font-size:36px;margin-bottom:6px}
+.hero-title{font-size:26px;font-weight:700;color:#fff;letter-spacing:1px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,0.9);margin-top:6px}
+.hero-name-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.hero-name-label{font-size:15px;color:#fff;font-weight:600}
+#nameDisplay{background:rgba(255,255,255,0.3);color:#fff;border:2px solid rgba(255,255,255,0.7);border-radius:10px;padding:6px 18px;font-size:14px;cursor:pointer;min-width:130px;font-family:inherit}
+#nameDisplay.filled{background:rgba(255,255,255,0.95);color:#2D3436;font-weight:700}
+#nameInput{display:none;border-radius:10px;border:2px solid rgba(255,255,255,0.8);padding:6px 14px;font-size:14px;background:rgba(255,255,255,0.95);color:#2D3436;width:160px;outline:none;font-family:inherit}
+#nameConfirm{display:none;background:#fff;color:#7B2D8B;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.hero-name-hint{font-size:12px;color:rgba(255,255,255,0.8);display:none}
+.hero-acts{display:flex;justify-content:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.hero-act{background:rgba(255,255,255,0.2);border-radius:10px;padding:6px 12px;font-size:12px;color:#fff;line-height:1.5}
+.hero-act b{display:block}
 
-const styles = {
-  app: {
-    fontFamily: "'Segoe UI', 'Microsoft JhengHei', sans-serif",
-    maxWidth: 860,
-    margin: "0 auto",
-    padding: "0 0 40px",
-    background: "var(--color-background-tertiary)",
-    minHeight: "100vh",
-  },
-  hero: {
-    background: `linear-gradient(135deg, ${palette.orange} 0%, ${palette.pink} 50%, ${palette.purple} 100%)`,
-    padding: "28px 24px 20px",
-    borderRadius: "0 0 24px 24px",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  heroTitle: {
-    fontSize: 26,
-    fontWeight: 700,
-    color: "#fff",
-    margin: 0,
-    letterSpacing: 1,
-  },
-  heroSub: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.9)",
-    margin: "6px 0 0",
-  },
-  tabs: {
-    display: "flex",
-    gap: 6,
-    padding: "0 16px",
-    flexWrap: "wrap",
-    marginBottom: 16,
-  },
-  tab: (active, color) => ({
-    padding: "8px 14px",
-    borderRadius: 20,
-    border: "none",
-    cursor: "pointer",
-    fontSize: 13,
-    fontWeight: active ? 700 : 500,
-    background: active ? color : "var(--color-background-primary)",
-    color: active ? "#fff" : "var(--color-text-secondary)",
-    boxShadow: active ? `0 3px 10px ${color}55` : "none",
-    transition: "all 0.2s",
-  }),
-  section: {
-    padding: "0 16px",
-  },
-  card: (bg = palette.white, border = "#eee") => ({
-    background: bg,
-    border: `2px solid ${border}`,
-    borderRadius: 16,
-    padding: "16px 18px",
-    marginBottom: 14,
-  }),
-  sectionTitle: (color) => ({
-    fontSize: 18,
-    fontWeight: 700,
-    color: color,
-    margin: "0 0 12px",
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-  }),
-  emoji: { fontSize: 22 },
-  badge: (bg, color) => ({
-    background: bg,
-    color: color,
-    borderRadius: 8,
-    padding: "3px 10px",
-    fontSize: 12,
-    fontWeight: 700,
-    display: "inline-block",
-    marginRight: 6,
-  }),
-  row3: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: 12,
-    marginBottom: 14,
-  },
-  miniCard: (bg, border) => ({
-    background: bg,
-    border: `2px solid ${border}`,
-    borderRadius: 14,
-    padding: "14px 16px",
-    textAlign: "center",
-  }),
-  bigNum: (color) => ({
-    fontSize: 36,
-    fontWeight: 700,
-    color: color,
-    lineHeight: 1,
-  }),
-  label: {
-    fontSize: 13,
-    color: "var(--color-text-secondary)",
-    marginTop: 4,
-  },
-  memBox: (bg, border) => ({
-    background: bg,
-    border: `2px dashed ${border}`,
-    borderRadius: 14,
-    padding: "14px 18px",
-    marginBottom: 12,
-  }),
-  memTitle: (color) => ({
-    fontSize: 13,
-    fontWeight: 700,
-    color: color,
-    marginBottom: 6,
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-  }),
-  compareRow: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: 8,
-    marginBottom: 12,
-  },
-  compareCell: (bg, border) => ({
-    background: bg,
-    border: `2px solid ${border}`,
-    borderRadius: 12,
-    padding: "10px 12px",
-    textAlign: "center",
-  }),
-  q: {
-    background: "var(--color-background-primary)",
-    border: "1.5px solid var(--color-border-tertiary)",
-    borderRadius: 14,
-    padding: "14px 16px",
-    marginBottom: 10,
-    cursor: "pointer",
-  },
-  qHead: {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: 10,
-    marginBottom: 8,
-  },
-  starBadge: (stars) => {
-    const configs = {
-      1: { bg: "#E8F4FA", color: "#118AB2" },
-      2: { bg: "#FFF3EE", color: "#FF6B35" },
-      3: { bg: "#FFF0F3", color: "#EF476F" },
-    };
-    const c = configs[stars] || configs[1];
-    return {
-      background: c.bg,
-      color: c.color,
-      borderRadius: 8,
-      padding: "2px 8px",
-      fontSize: 11,
-      fontWeight: 700,
-      whiteSpace: "nowrap",
-      flexShrink: 0,
-    };
-  },
-  optBtn: (selected, correct, show) => {
-    let bg = "var(--color-background-secondary)";
-    let border = "var(--color-border-tertiary)";
-    if (show && correct) { bg = "#E8FFF8"; border = "#06D6A0"; }
-    else if (show && selected && !correct) { bg = "#FFF0F3"; border = "#EF476F"; }
-    else if (selected) { bg = "#EEF6FD"; border = "#118AB2"; }
-    return {
-      display: "block",
-      width: "100%",
-      textAlign: "left",
-      padding: "8px 12px",
-      borderRadius: 10,
-      border: `1.5px solid ${border}`,
-      background: bg,
-      cursor: show ? "default" : "pointer",
-      fontSize: 13,
-      marginBottom: 6,
-      color: "var(--color-text-primary)",
-      transition: "all 0.15s",
-    };
-  },
-  tipBox: {
-    background: palette.lightYellow,
-    border: `2px solid ${palette.yellow}`,
-    borderRadius: 12,
-    padding: "10px 14px",
-    fontSize: 13,
-    color: palette.dark,
-    marginTop: 8,
-  },
-};
+/* ── Tabs ── */
+.tabs{display:flex;gap:6px;padding:0 16px;flex-wrap:wrap;margin-bottom:16px}
+.tab-btn{padding:8px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:#fff;color:#636E72;transition:all 0.2s;font-family:inherit}
+.tab-btn.active{color:#fff;font-weight:700}
 
-// ============================================================
-// DATA
-// ============================================================
+/* ── Section ── */
+.section{padding:0 16px;display:none}
+.section.active{display:block}
+.sec-title{font-size:18px;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:8px}
 
+/* ── Cards ── */
+.card{border-radius:16px;padding:16px 18px;margin-bottom:14px;border-width:2px;border-style:solid}
+.mini-card{border-radius:14px;padding:14px 16px;text-align:center;border-width:2px;border-style:solid}
+.mem-box{border-radius:14px;padding:14px 18px;margin-bottom:12px;border-width:2px;border-style:dashed}
+.mem-title{font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+
+/* ── Grid helpers ── */
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.grid-compare{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.grid33{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* ── Badges ── */
+.badge{border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;display:inline-block;margin-right:6px}
+
+/* ── Table ── */
+.compare-table{width:100%;border-collapse:collapse;font-size:12px}
+.compare-table th{padding:6px 10px;color:#fff;text-align:center;font-weight:600}
+.compare-table td{padding:6px 10px;text-align:center;border-bottom:1px solid #eee;color:#2D3436}
+
+/* ── Particle dots ── */
+.dot-grid{display:flex;flex-wrap:wrap;justify-content:center;margin-bottom:8px;min-height:60px}
+
+/* ── Quiz ── */
+.quiz-name-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-radius:14px;padding:14px 18px;margin-bottom:14px;border:2px solid #7B2D8B;background:#F5EEF8}
+.timer-box{margin-left:auto;border-radius:10px;padding:6px 14px;font-size:13px;font-weight:600;border-width:1.5px;border-style:solid;min-width:90px;text-align:center;transition:all 0.3s;background:#f0f2f5;color:#636E72;border-color:#ddd}
+.timer-box.running{background:#FF6B35;color:#fff;border-color:#FF6B35}
+.diff-filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.score-card{border-radius:16px;padding:16px 18px;margin-bottom:16px;border-width:2px;border-style:solid}
+.score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px}
+.score-cell{background:#fff;border-radius:10px;padding:10px 8px;text-align:center;border:1.5px solid #eee}
+.score-cell-label{font-size:11px;color:#636E72;margin-bottom:4px}
+.score-cell-val{font-size:22px;font-weight:700;line-height:1.1}
+.score-cell-val.small{font-size:13px}
+.status-box{border-radius:10px;padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:8px;margin-top:8px;border-width:1.5px;border-style:solid}
+.q-card{background:#fff;border:1.5px solid #e0e0e0;border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.q-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.star-badge{border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.q-text{font-size:13px;font-weight:500;line-height:1.5;color:#2D3436}
+.opt-btn{display:block;width:100%;text-align:left;padding:8px 12px;border-radius:10px;border:1.5px solid #e0e0e0;background:#f8f9fa;cursor:pointer;font-size:13px;margin-bottom:6px;color:#2D3436;transition:all 0.15s;font-family:inherit}
+.opt-btn:hover{background:#EEF6FD;border-color:#118AB2}
+.opt-btn.selected{background:#EEF6FD;border-color:#118AB2}
+.opt-btn.correct{background:#E8FFF8;border-color:#06D6A0;cursor:default}
+.opt-btn.wrong{background:#FFF0F3;border-color:#EF476F;cursor:default}
+.opt-btn.revealed{cursor:default}
+.check-btn{background:#118AB2;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:inherit;margin-top:6px}
+.tip-box{background:#FFFBEE;border:2px solid #FFD166;border-radius:12px;padding:10px 14px;font-size:13px;color:#2D3436;margin-top:8px}
+.tip-box.green{background:#E8FFF8;border-color:#06D6A0}
+.bottom-btns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-primary{background:#06D6A0;color:#fff;border:none;border-radius:12px;padding:10px 22px;font-size:14px;cursor:pointer;font-weight:600;font-family:inherit}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed}
+.btn-secondary{background:#f0f2f5;color:#2D3436;border:1.5px solid #ddd;border-radius:12px;padding:10px 22px;font-size:14px;cursor:pointer;font-family:inherit}
+
+/* ── Key Points ── */
+.kp-list{margin:0;padding-left:20px}
+.kp-list li{font-size:13px;color:#2D3436;margin-bottom:5px;line-height:1.6}
+.gas-code{font-size:12px;color:#2D3436;background:#fff;border-radius:8px;padding:10px 12px;border:1px solid #ddd;font-family:monospace;line-height:1.8}
+
+@media(max-width:600px){
+  .grid-compare{grid-template-columns:1fr}
+  .grid33{grid-template-columns:1fr 1fr}
+  .hero-title{font-size:20px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════════════════════
+     HERO
+══════════════════════════════ -->
+<div class="hero">
+  <div class="hero-emoji">🔥🌡️❄️</div>
+  <h1 class="hero-title">第四單元：熱的作用與傳播</h1>
+  <p class="hero-sub">國小五年級自然 ｜ 超強自學攻略 ｜ 40題練習</p>
+  <div class="hero-name-row">
+    <span class="hero-name-label">🧑‍🎓 學生姓名：</span>
+    <button id="nameDisplay" onclick="startEditName()">點此輸入姓名 ✏️</button>
+    <input id="nameInput" type="text" placeholder="輸入姓名後按 Enter" onkeydown="if(event.key==='Enter')confirmName()">
+    <button id="nameConfirm" onclick="confirmName()">確定</button>
+    <span id="nameHint" class="hero-name-hint">✅ 作答後成績將自動記錄到 Google 試算表</span>
+  </div>
+  <div class="hero-acts">
+    <div class="hero-act">🌡️ 活動一<b>熱脹冷縮</b></div>
+    <div class="hero-act">🔥 活動二<b>熱的傳播</b></div>
+    <div class="hero-act">🧊 活動三<b>保溫散熱</b></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TABS
+══════════════════════════════ -->
+<div class="tabs" id="tabBar">
+  <button class="tab-btn" data-tab="expand"     data-color="#FF6B35" onclick="switchTab('expand')">🌡️ 熱脹冷縮</button>
+  <button class="tab-btn" data-tab="particle"   data-color="#7B2D8B" onclick="switchTab('particle')">🔬 粒子模型</button>
+  <button class="tab-btn" data-tab="transfer"   data-color="#118AB2" onclick="switchTab('transfer')">🔥 傳熱方式</button>
+  <button class="tab-btn" data-tab="insulation" data-color="#06D6A0" onclick="switchTab('insulation')">🧊 保溫散熱</button>
+  <button class="tab-btn" data-tab="summary"    data-color="#EF476F" onclick="switchTab('summary')">📋 重點整理</button>
+  <button class="tab-btn" data-tab="quiz"       data-color="#FF6B35" onclick="switchTab('quiz')">📝 練習題40</button>
+</div>
+
+<!-- ══════════════════════════════
+  TAB 1：熱脹冷縮
+══════════════════════════════ -->
+<div id="sec-expand" class="section">
+  <div class="sec-title" style="color:#FF6B35">🌡️ 熱脹冷縮對比圖</div>
+  <div class="grid-compare">
+    <!-- 氣體 -->
+    <div class="mini-card" style="background:#FFFBEE;border-color:#FFD166">
+      <div style="font-size:24px;margin-bottom:4px">💨</div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2D3436">氣體 Gas</div>
+      <div style="background:#FF6B3522;border:1.5px solid #FF6B35;border-radius:8px;padding:6px 8px;margin-bottom:6px">
+        <div style="font-size:11px;color:#FF6B35;font-weight:700">🔴 受熱</div>
+        <div style="font-size:11px;color:#2D3436">體積大幅膨脹</div>
+      </div>
+      <div style="background:#118AB222;border:1.5px solid #118AB2;border-radius:8px;padding:6px 8px;margin-bottom:6px">
+        <div style="font-size:11px;color:#118AB2;font-weight:700">🔵 遇冷</div>
+        <div style="font-size:11px;color:#2D3436">體積大幅縮小</div>
+      </div>
+      <div style="font-size:10px;color:#636E72;margin-top:4px">例：熱氣球、輪胎</div>
+    </div>
+    <!-- 液體 -->
+    <div class="mini-card" style="background:#FFFBEE;border-color:#FFD166">
+      <div style="font-size:24px;margin-bottom:4px">💧</div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2D3436">液體 Liquid</div>
+      <div style="background:#FF8C4222;border:1.5px solid #FF8C42;border-radius:8px;padding:6px 8px;margin-bottom:6px">
+        <div style="font-size:11px;color:#FF8C42;font-weight:700">🔴 受熱</div>
+        <div style="font-size:11px;color:#2D3436">體積中等膨脹</div>
+      </div>
+      <div style="background:#4A90D922;border:1.5px solid #4A90D9;border-radius:8px;padding:6px 8px;margin-bottom:6px">
+        <div style="font-size:11px;color:#4A90D9;font-weight:700">🔵 遇冷</div>
+        <div style="font-size:11px;color:#2D3436">體積中等縮小</div>
+      </div>
+      <div style="font-size:10px;color:#636E72;margin-top:4px">例：氣溫計液柱</div>
+    </div>
+    <!-- 固體 -->
+    <div class="mini-card" style="background:#FFFBEE;border-color:#FFD166">
+      <div style="font-size:24px;margin-bottom:4px">🪨</div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2D3436">固體 Solid</div>
+      <div style="background:#FFB34722;border:1.5px solid #FFB347;border-radius:8px;padding:6px 8px;margin-bottom:6px">
+        <div style="font-size:11px;color:#FFB347;font-weight:700">🔴 受熱</div>
+        <div style="font-size:11px;color:#2D3436">體積微量膨脹</div>
+      </div>
+      <div style="background:#6BA3BE22;border:1.5px solid #6BA3BE;border-radius:8px;padding:6px 8px;margin-bottom:6px">
+        <div style="font-size:11px;color:#6BA3BE;font-weight:700">🔵 遇冷</div>
+        <div style="font-size:11px;color:#2D3436">體積微量縮小</div>
+      </div>
+      <div style="font-size:10px;color:#636E72;margin-top:4px">例：橋面、磁磚縫</div>
+    </div>
+  </div>
+  <div class="mem-box" style="background:#FFFBEE;border-color:#FFD166">
+    <div class="mem-title" style="color:#FF6B35">🧠 超強記憶口訣</div>
+    <div style="font-size:14px;color:#2D3436;font-weight:600">「氣 &gt; 液 &gt; 固，受熱都膨脹，遇冷都收縮！」</div>
+    <div style="font-size:12px;color:#636E72;margin-top:4px">氣體脹最多 &gt; 液體其次 &gt; 固體脹最少（但力量最強！）</div>
+  </div>
+
+  <!-- 生活例子 -->
+  <div class="card" style="background:#FFF3EE;border-color:#FF6B35;margin-top:4px">
+    <div style="font-weight:700;font-size:15px;color:#FF6B35;margin-bottom:12px">🏠 生活中熱脹冷縮的應用</div>
+    <div class="grid2">
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #FFD166">
+        <div style="font-size:15px;margin-bottom:4px">🎈 熱氣球</div>
+        <div class="badge" style="background:#FFF3EE;color:#FF6B35">氣體</div>
+        <div style="font-size:12px;color:#636E72;margin-top:4px">加熱→空氣膨脹→氣球鼓起升空</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #FFD166">
+        <div style="font-size:15px;margin-bottom:4px">🌡️ 氣溫計</div>
+        <div class="badge" style="background:#E8F4FA;color:#118AB2">液體</div>
+        <div style="font-size:12px;color:#636E72;margin-top:4px">溫度高→液柱膨脹上升</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #FFD166">
+        <div style="font-size:15px;margin-bottom:4px">🛤️ 橋面縫隙</div>
+        <div class="badge" style="background:#E8FFF8;color:#06D6A0">固體</div>
+        <div style="font-size:12px;color:#636E72;margin-top:4px">預留縫隙避免夏天膨脹互擠破裂</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #FFD166">
+        <div style="font-size:15px;margin-bottom:4px">🚲 輪胎打氣</div>
+        <div class="badge" style="background:#FFF3EE;color:#FF6B35">氣體</div>
+        <div style="font-size:12px;color:#636E72;margin-top:4px">夏天氣溫高，氣不能打太滿！</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #FFD166">
+        <div style="font-size:15px;margin-bottom:4px">🏠 磁磚縫隙</div>
+        <div class="badge" style="background:#E8FFF8;color:#06D6A0">固體</div>
+        <div style="font-size:12px;color:#636E72;margin-top:4px">縫隙防止磁磚夏天受熱破裂</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #FFD166">
+        <div style="font-size:15px;margin-bottom:4px">⚡ 電纜線弧度</div>
+        <div class="badge" style="background:#E8FFF8;color:#06D6A0">固體</div>
+        <div style="font-size:12px;color:#636E72;margin-top:4px">預留弧度避免冬天收縮斷裂</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  TAB 2：粒子模型
+══════════════════════════════ -->
+<div id="sec-particle" class="section">
+  <div class="sec-title" style="color:#7B2D8B">🔬 微觀視角：粒子與熱脹冷縮</div>
+  <div class="grid3">
+    <!-- 低溫 -->
+    <div class="mini-card" style="background:#E8F4FA;border-color:#118AB2;padding:12px 8px">
+      <div style="font-weight:700;font-size:13px;color:#118AB2;margin-bottom:8px">低溫 ❄️</div>
+      <div class="dot-grid" id="dots-cold" style="gap:4px"></div>
+      <div style="font-size:11px;color:#2D3436">粒子間距縮小</div>
+      <div style="font-size:10px;color:#636E72;margin-top:2px">→ 體積變小</div>
+    </div>
+    <!-- 室溫 -->
+    <div class="mini-card" style="background:#F5F5F5;border-color:#888;padding:12px 8px">
+      <div style="font-weight:700;font-size:13px;color:#666;margin-bottom:8px">室溫 🌤️</div>
+      <div class="dot-grid" id="dots-room" style="gap:7px"></div>
+      <div style="font-size:11px;color:#2D3436">粒子間距適中</div>
+      <div style="font-size:10px;color:#636E72;margin-top:2px">→ 正常體積</div>
+    </div>
+    <!-- 高溫 -->
+    <div class="mini-card" style="background:#FFF3EE;border-color:#FF6B35;padding:12px 8px">
+      <div style="font-weight:700;font-size:13px;color:#FF6B35;margin-bottom:8px">高溫 🔥</div>
+      <div class="dot-grid" id="dots-hot" style="gap:11px"></div>
+      <div style="font-size:11px;color:#2D3436">粒子間距增大</div>
+      <div style="font-size:10px;color:#636E72;margin-top:2px">→ 體積變大</div>
+    </div>
+  </div>
+  <div class="mem-box" style="background:#F5EEF8;border-color:#7B2D8B">
+    <div class="mem-title" style="color:#7B2D8B">🔬 科學原理（有深度的補充）</div>
+    <div style="font-size:13px;color:#2D3436;line-height:1.8">
+      物質由微小粒子組成，粒子不停振動：<br>
+      • 溫度高 → 粒子振動幅度加大 → 間距增加 → <b>體積膨脹</b><br>
+      • 溫度低 → 粒子振動幅度減小 → 間距縮小 → <b>體積收縮</b><br>
+      • <b>特例：水在 0~4°C 是「熱縮冷脹」</b>→ 湖泊冬天表面先結冰，底部保持液態保護水中生物！
+    </div>
+  </div>
+  <div class="card" style="background:#E8F4FA;border-color:#118AB2">
+    <div style="font-weight:700;font-size:14px;color:#118AB2;margin-bottom:10px">💡 銅球實驗說明</div>
+    <div class="grid33">
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #E8F4FA;text-align:center">
+        <div style="font-size:20px">⚪</div>
+        <div style="font-size:12px;font-weight:700;color:#118AB2">未加熱</div>
+        <div style="font-size:11px;color:#636E72;margin-top:4px">銅球 ✅ 可穿過銅環</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #FFF3EE;text-align:center">
+        <div style="font-size:20px">🔴</div>
+        <div style="font-size:12px;font-weight:700;color:#FF6B35">加熱後</div>
+        <div style="font-size:11px;color:#636E72;margin-top:4px">銅球膨脹 ❌ 無法穿過</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #E8FFF8;text-align:center">
+        <div style="font-size:20px">🔵</div>
+        <div style="font-size:12px;font-weight:700;color:#06D6A0">冷卻後</div>
+        <div style="font-size:11px;color:#636E72;margin-top:4px">銅球收縮 ✅ 可穿過銅環</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  TAB 3：傳熱方式
+══════════════════════════════ -->
+<div id="sec-transfer" class="section">
+  <div class="sec-title" style="color:#118AB2">🔥 三大傳熱方式比較</div>
+
+  <!-- 傳導 -->
+  <div class="card" style="background:#FFF3EE;border-color:#FF6B35">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:28px">🍳</span>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:#FF6B35">傳導 Conduction</div>
+        <div style="font-size:12px;color:#636E72">主要發生在：固體</div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div style="background:#FF6B3515;border-radius:8px;padding:8px 10px">
+        <div style="font-size:11px;color:#FF6B35;font-weight:700">傳播方向</div>
+        <div style="font-size:12px;color:#2D3436">高溫 → 低溫</div>
+      </div>
+      <div style="background:#FF6B3515;border-radius:8px;padding:8px 10px">
+        <div style="font-size:11px;color:#FF6B35;font-weight:700">需要介質？</div>
+        <div style="font-size:12px;color:#2D3436">需要物質</div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px">
+      <div style="font-size:11px;color:#636E72;margin-bottom:4px">📌 生活例子：</div>
+      <span class="badge" style="background:#FF6B3520;color:#FF6B35">鐵湯匙放熱湯中變燙</span>
+      <span class="badge" style="background:#FF6B3520;color:#FF6B35">平底鍋鍋身用金屬</span>
+      <span class="badge" style="background:#FF6B3520;color:#FF6B35">隔熱手套用布/塑膠</span>
+    </div>
+    <div style="background:#FFFBEE;border-radius:8px;padding:6px 10px;border:1px dashed #FFD166">
+      <span style="font-size:11px;color:#FF6B35;font-weight:700">🧠 記憶點：</span>
+      <span style="font-size:11px;color:#2D3436"> 固體直線傳，快慢看材質！（銀&gt;銅&gt;鋁&gt;鐵&gt;非金屬）</span>
+    </div>
+  </div>
+
+  <!-- 對流 -->
+  <div class="card" style="background:#E8F4FA;border-color:#118AB2">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:28px">🌊</span>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:#118AB2">對流 Convection</div>
+        <div style="font-size:12px;color:#636E72">主要發生在：液體、氣體</div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div style="background:#118AB215;border-radius:8px;padding:8px 10px">
+        <div style="font-size:11px;color:#118AB2;font-weight:700">傳播方向</div>
+        <div style="font-size:12px;color:#2D3436">熱的上升、冷的下降</div>
+      </div>
+      <div style="background:#118AB215;border-radius:8px;padding:8px 10px">
+        <div style="font-size:11px;color:#118AB2;font-weight:700">需要介質？</div>
+        <div style="font-size:12px;color:#2D3436">需要流體</div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px">
+      <div style="font-size:11px;color:#636E72;margin-bottom:4px">📌 生活例子：</div>
+      <span class="badge" style="background:#118AB220;color:#118AB2">煮湯時食物上下滾動</span>
+      <span class="badge" style="background:#118AB220;color:#118AB2">冷氣裝上方</span>
+      <span class="badge" style="background:#118AB220;color:#118AB2">電暖器放地板</span>
+      <span class="badge" style="background:#118AB220;color:#118AB2">氣炸鍋熱風循環</span>
+    </div>
+    <div style="background:#FFFBEE;border-radius:8px;padding:6px 10px;border:1px dashed #FFD166">
+      <span style="font-size:11px;color:#118AB2;font-weight:700">🧠 記憶點：</span>
+      <span style="font-size:11px;color:#2D3436"> 液氣熱上升，冷下降循環！</span>
+    </div>
+  </div>
+
+  <!-- 輻射 -->
+  <div class="card" style="background:#FFF0F3;border-color:#EF476F">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:28px">☀️</span>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:#EF476F">輻射 Radiation</div>
+        <div style="font-size:12px;color:#636E72">主要發生在：所有物體（絕對零度以上）</div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div style="background:#EF476F15;border-radius:8px;padding:8px 10px">
+        <div style="font-size:11px;color:#EF476F;font-weight:700">傳播方向</div>
+        <div style="font-size:12px;color:#2D3436">四面八方向外傳播</div>
+      </div>
+      <div style="background:#EF476F15;border-radius:8px;padding:8px 10px">
+        <div style="font-size:11px;color:#EF476F;font-weight:700">需要介質？</div>
+        <div style="font-size:12px;color:#2D3436"><b>不需要物質！</b></div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px">
+      <div style="font-size:11px;color:#636E72;margin-bottom:4px">📌 生活例子：</div>
+      <span class="badge" style="background:#EF476F20;color:#EF476F">太陽熱傳到地球</span>
+      <span class="badge" style="background:#EF476F20;color:#EF476F">白色太空衣隔熱</span>
+      <span class="badge" style="background:#EF476F20;color:#EF476F">深色集熱板吸熱</span>
+    </div>
+    <div style="background:#FFFBEE;border-radius:8px;padding:6px 10px;border:1px dashed #FFD166">
+      <span style="font-size:11px;color:#EF476F;font-weight:700">🧠 記憶點：</span>
+      <span style="font-size:11px;color:#2D3436"> 輻射最特別，真空也能傳！</span>
+    </div>
+  </div>
+
+  <!-- 比較表 -->
+  <div class="mem-box" style="background:#FFF0F3;border-color:#EF476F">
+    <div class="mem-title" style="color:#EF476F">🎯 三種傳熱超級比一比</div>
+    <div style="overflow-x:auto">
+      <table class="compare-table">
+        <thead><tr style="background:#EF476F">
+          <th>項目</th><th>傳導</th><th>對流</th><th>輻射</th>
+        </tr></thead>
+        <tbody>
+          <tr style="background:rgba(255,255,255,0.5)"><td>適用形態</td><td>固體</td><td>液體、氣體</td><td>所有物體</td></tr>
+          <tr><td>需要介質</td><td>✅ 需要</td><td>✅ 需要</td><td>❌ 不需要</td></tr>
+          <tr style="background:rgba(255,255,255,0.5)"><td>傳播原理</td><td>粒子振動傳熱</td><td>流體循環流動</td><td>電磁波輻射</td></tr>
+          <tr><td>生活應用</td><td>鍋具設計</td><td>冷氣/暖器位置</td><td>遮陽傘/白牆</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  TAB 4：保溫散熱
+══════════════════════════════ -->
+<div id="sec-insulation" class="section">
+  <div class="sec-title" style="color:#06D6A0">🧊 保溫 vs 散熱</div>
+  <div class="grid3">
+    <div class="mini-card" style="background:#E8F4FA;border-color:#118AB2">
+      <div style="font-size:32px">🏺</div>
+      <div style="font-weight:700;color:#118AB2;font-size:14px;margin-top:6px">保溫原理</div>
+      <div style="font-size:12px;color:#2D3436;margin-top:6px">阻隔或減緩熱的傳播速度</div>
+      <div style="font-size:11px;color:#636E72;margin-top:4px">→ 維持物品原本的溫度</div>
+    </div>
+    <div class="mini-card" style="background:#FFF3EE;border-color:#FF6B35">
+      <div style="font-size:32px">💨</div>
+      <div style="font-weight:700;color:#FF6B35;font-size:14px;margin-top:6px">散熱原理</div>
+      <div style="font-size:12px;color:#2D3436;margin-top:6px">加快熱的傳播速度</div>
+      <div style="font-size:11px;color:#636E72;margin-top:4px">→ 讓物品快速降溫</div>
+    </div>
+    <div class="mini-card" style="background:#E8FFF8;border-color:#06D6A0">
+      <div style="font-size:32px">🌿</div>
+      <div style="font-weight:700;color:#06D6A0;font-size:14px;margin-top:6px">綠建築設計</div>
+      <div style="font-size:12px;color:#2D3436;margin-top:6px">結合保溫+散熱，節能減碳</div>
+      <div style="font-size:11px;color:#636E72;margin-top:4px">北投圖書館為代表</div>
+    </div>
+  </div>
+
+  <!-- 保溫瓶解剖 -->
+  <div class="card" style="background:#E8F4FA;border-color:#118AB2">
+    <div style="font-weight:700;font-size:14px;color:#118AB2;margin-bottom:10px">🏺 保溫瓶解剖圖（記憶神器！）</div>
+    <div class="grid33">
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #118AB2;text-align:center">
+        <div style="font-size:20px">🔵</div>
+        <div style="font-weight:700;font-size:12px;color:#118AB2;margin-bottom:4px">瓶蓋</div>
+        <span class="badge" style="background:#E8F4FA;color:#118AB2;font-size:10px">阻傳導</span>
+        <span class="badge" style="background:#E8F4FA;color:#118AB2;font-size:10px">阻對流</span>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #EF476F;text-align:center">
+        <div style="font-size:20px">⭕</div>
+        <div style="font-weight:700;font-size:12px;color:#EF476F;margin-bottom:4px">內膽（拋光）</div>
+        <span class="badge" style="background:#FFF0F3;color:#EF476F;font-size:10px">阻輻射</span>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #7B2D8B;text-align:center">
+        <div style="font-size:20px">🟣</div>
+        <div style="font-weight:700;font-size:12px;color:#7B2D8B;margin-bottom:4px">真空夾層</div>
+        <span class="badge" style="background:#F5EEF8;color:#7B2D8B;font-size:10px">阻傳導</span>
+        <span class="badge" style="background:#F5EEF8;color:#7B2D8B;font-size:10px">阻對流</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 北投圖書館 -->
+  <div class="card" style="background:#FFF3EE;border-color:#FF6B35">
+    <div style="font-weight:700;font-size:14px;color:#FF6B35;margin-bottom:10px">🏙️ 北投圖書館散熱設計</div>
+    <div class="grid2">
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1px solid #FFD166">
+        <div style="font-size:16px">🌱 <span style="font-weight:600;font-size:12px;color:#2D3436">屋頂種植花草</span></div>
+        <span class="badge" style="background:#FFF3EE;color:#FF6B35">輻射隔熱</span>
+        <div style="font-size:11px;color:#636E72;margin-top:4px">植物遮擋太陽熱輻射</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1px solid #FFD166">
+        <div style="font-size:16px">🪵 <span style="font-weight:600;font-size:12px;color:#2D3436">垂直木格柵</span></div>
+        <span class="badge" style="background:#FFF3EE;color:#FF6B35">輻射隔熱</span>
+        <div style="font-size:11px;color:#636E72;margin-top:4px">減少陽光照進室內</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1px solid #FFD166">
+        <div style="font-size:16px">🪟 <span style="font-weight:600;font-size:12px;color:#2D3436">高低窗設計</span></div>
+        <span class="badge" style="background:#FFF3EE;color:#FF6B35">對流散熱</span>
+        <div style="font-size:11px;color:#636E72;margin-top:4px">熱空氣從高窗排出</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1px solid #FFD166">
+        <div style="font-size:16px">📐 <span style="font-weight:600;font-size:12px;color:#2D3436">尖角朝西設計</span></div>
+        <span class="badge" style="background:#FFF3EE;color:#FF6B35">輻射隔熱</span>
+        <div style="font-size:11px;color:#636E72;margin-top:4px">減少西曬面積</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 保暖衣物 -->
+  <div class="card" style="background:#E8FFF8;border-color:#06D6A0">
+    <div style="font-weight:700;font-size:14px;color:#06D6A0;margin-bottom:10px">🧥 保暖衣物原理</div>
+    <div class="grid2">
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #E8FFF8">
+        <div style="font-size:16px">🎩 毛帽、圍巾</div>
+        <div style="font-size:12px;color:#636E72;margin-top:4px">纖維交錯形成空隙 → 鎖住熱空氣 → 減緩熱對流散失</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px;border:1.5px solid #E8FFF8">
+        <div style="font-size:16px">🧥 羽絨外套</div>
+        <div style="font-size:12px;color:#636E72;margin-top:4px">羽絨間形成空氣層 → 隔絕外部冷空氣 → 阻止傳導和對流</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  TAB 5：重點整理
+══════════════════════════════ -->
+<div id="sec-summary" class="section">
+  <div class="sec-title" style="color:#7B2D8B">📋 單元重點總整理</div>
+
+  <div class="card" style="background:#FF6B3508;border-color:#FF6B35">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:24px">🌡️</span><div style="font-weight:700;font-size:15px;color:#FF6B35">熱脹冷縮</div></div>
+    <ul class="kp-list">
+      <li>氣體脹最多 &gt; 液體 &gt; 固體脹最少（但力量最強！）</li>
+      <li>受熱 → 粒子間距增大 → 體積膨脹</li>
+      <li>遇冷 → 粒子間距縮小 → 體積收縮</li>
+      <li>例外：水在0~4℃是「熱縮冷脹」</li>
+    </ul>
+  </div>
+  <div class="card" style="background:#FF6B3508;border-color:#FF6B35">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:24px">🔥</span><div style="font-weight:700;font-size:15px;color:#FF6B35">傳導（固體）</div></div>
+    <ul class="kp-list">
+      <li>熱由高溫傳到低溫（固體為主）</li>
+      <li>金屬傳熱快（銀&gt;銅&gt;鋁&gt;鐵）</li>
+      <li>非金屬傳熱慢（塑膠、木材、布、空氣）</li>
+      <li>應用：鍋具設計（金屬鍋身+非金屬握把）</li>
+    </ul>
+  </div>
+  <div class="card" style="background:#118AB208;border-color:#118AB2">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:24px">🌊</span><div style="font-weight:700;font-size:15px;color:#118AB2">對流（液體/氣體）</div></div>
+    <ul class="kp-list">
+      <li>溫度高 → 液/氣密度小 → 上升</li>
+      <li>溫度低 → 液/氣密度大 → 下降</li>
+      <li>應用：冷氣裝上方、電暖器放地板、氣炸鍋</li>
+      <li>沒有流動 = 沒有對流！</li>
+    </ul>
+  </div>
+  <div class="card" style="background:#EF476F08;border-color:#EF476F">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:24px">☀️</span><div style="font-weight:700;font-size:15px;color:#EF476F">輻射（不需介質）</div></div>
+    <ul class="kp-list">
+      <li>不需要任何物質，真空中也能傳熱</li>
+      <li>以電磁波（紅外線）傳播，光速！</li>
+      <li>深色吸熱多；淺色（白色）反射多</li>
+      <li>應用：遮陽傘、白色太空衣、深色集熱板</li>
+    </ul>
+  </div>
+  <div class="card" style="background:#06D6A008;border-color:#06D6A0">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:24px">🧊</span><div style="font-weight:700;font-size:15px;color:#06D6A0">保溫與散熱</div></div>
+    <ul class="kp-list">
+      <li>保溫 = 阻隔或減緩熱的傳播</li>
+      <li>散熱 = 加快熱的傳播速度</li>
+      <li>保溫瓶：蓋（傳導對流）、內膽拋光（輻射）、真空（傳導對流）</li>
+      <li>都市熱島效應：深色建材+缺少綠地導致城市過熱</li>
+    </ul>
+  </div>
+
+ 
+
+<!-- ══════════════════════════════
+  TAB 6：練習題
+══════════════════════════════ -->
+<div id="sec-quiz" class="section">
+  <div class="sec-title" style="color:#EF476F">📝 練習題（共40題）</div>
+
+  <!-- 姓名 + 計時器 -->
+  <div class="quiz-name-bar">
+    <span style="font-size:20px">🧑‍🎓</span>
+    <span style="font-weight:700;font-size:14px;color:#7B2D8B">學生姓名</span>
+    <span id="quizNameDisplay" style="font-size:14px;color:#2D3436;padding:6px 14px;background:#fff;border-radius:10px;border:1.5px solid #7B2D8B;min-width:100px">（請在上方輸入）</span>
+    <div id="timerBox" class="timer-box">⏱ 00分00秒</div>
+  </div>
+
+  <!-- 難度篩選 -->
+  <div class="diff-filter" id="diffFilter">
+    <button class="tab-btn active" data-diff="0" data-color="#636E72" onclick="setFilter(0,this)" style="font-size:12px">全部 40題</button>
+    <button class="tab-btn" data-diff="1" data-color="#118AB2" onclick="setFilter(1,this)" style="font-size:12px">★ 基礎 15題</button>
+    <button class="tab-btn" data-diff="2" data-color="#FF6B35" onclick="setFilter(2,this)" style="font-size:12px">★★ 進階 15題</button>
+    <button class="tab-btn" data-diff="3" data-color="#EF476F" onclick="setFilter(3,this)" style="font-size:12px">★★★ 挑戰 10題</button>
+  </div>
+
+  <!-- 分數卡片（隱藏） -->
+  <div id="scoreCard" style="display:none"></div>
+
+  <!-- 題目容器 -->
+  <div id="quizContainer"></div>
+
+  <!-- 底部按鈕 -->
+  <div class="bottom-btns">
+    <button class="btn-primary" id="calcBtn" onclick="calcScore()">🎯 計算分數 + 記錄成績</button>
+    <button class="btn-secondary" onclick="resetQuiz()">🔄 重新作答</button>
+  </div>
+</div>
+
+</div><!-- /.app -->
+
+<script>
+// ══════════════════════════════════════════
+//  GAS URL
+// ══════════════════════════════════════════
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxRAlqtleGNZSzoZizuE-TulXlfNV2do1nnNoOBbn3-fzRjoK3l6iiQahYyPBpGRlXP/exec";
+
+// ══════════════════════════════════════════
+//  QUESTIONS DATA
+// ══════════════════════════════════════════
 const questions = [
-  // Easy ★
-  { id: 1, stars: 1, text: "氣體受熱後，體積會如何變化？", opts: ["收縮變小", "膨脹變大", "保持不變", "先膨脹後收縮"], ans: 1, tip: "記口訣：受熱→膨脹，遇冷→收縮！" },
-  { id: 2, stars: 1, text: "液體受冷後，體積會如何變化？", opts: ["膨脹變大", "保持不變", "收縮變小", "消失不見"], ans: 2, tip: "固、液、氣三態遇冷都收縮！" },
-  { id: 3, stars: 1, text: "下列哪一項是「氣體」熱脹冷縮的例子？", opts: ["磁磚間留縫隙", "氣溫計液柱上升", "熱氣球加熱後膨脹變大", "橋面預留縫隙"], ans: 2, tip: "熱氣球裡面是空氣（氣體）！" },
-  { id: 4, stars: 1, text: "熱透過固體由高溫傳到低溫的方式稱為？", opts: ["對流", "輻射", "傳導", "熱脹"], ans: 2, tip: "固體→傳導，液氣→對流，太陽→輻射" },
-  { id: 5, stars: 1, text: "液體和氣體主要的傳熱方式是？", opts: ["傳導", "對流", "輻射", "熱脹冷縮"], ans: 1, tip: "液體氣體會流動，所以靠「對流」傳熱！" },
-  { id: 6, stars: 1, text: "太陽的熱傳到地球，是透過哪種方式？", opts: ["傳導", "對流", "輻射", "熱脹"], ans: 2, tip: "地球和太陽之間幾乎沒有物質，只有輻射不需要介質！" },
-  { id: 7, stars: 1, text: "要達到保溫效果，應該怎麼做？", opts: ["加快熱傳播速度", "阻隔或減緩熱的傳播", "讓熱對流更快", "增加輻射面積"], ans: 1, tip: "保溫=減緩熱傳播；散熱=加快熱傳播" },
-  { id: 8, stars: 1, text: "平底鍋的鍋身（接觸熱源部分）通常使用什麼材質？", opts: ["塑膠", "木材", "金屬", "玻璃"], ans: 2, tip: "金屬傳熱快→鍋身；非金屬傳熱慢→握把" },
-  { id: 9, stars: 1, text: "冷氣機通常裝在房間的哪個位置？", opts: ["地板", "中間", "上方", "任何位置都一樣"], ans: 2, tip: "冷空氣密度大會下降，裝上方可以讓整個房間變涼！" },
-  { id: 10, stars: 1, text: "把熱水放入較大開口的容器，和放入小開口容器比較，哪個降溫較快？", opts: ["小開口容器", "大開口容器", "一樣快", "無法判斷"], ans: 1, tip: "開口大→接觸空氣面積大→對流快→散熱快！" },
-  { id: 11, stars: 1, text: "銅球加熱後無法穿過銅環，是因為銅球的體積？", opts: ["縮小", "不變", "膨脹變大", "消失"], ans: 2, tip: "固體受熱→體積膨脹→銅球變大→無法穿過！" },
-  { id: 12, stars: 1, text: "氣溫計液柱隨溫度升高而上升，這是哪種熱脹冷縮的例子？", opts: ["氣體", "液體", "固體", "真空"], ans: 1, tip: "氣溫計裡面的酒精或水銀是液體！" },
-  { id: 13, stars: 1, text: "物質是由什麼組成的？", opts: ["分子和原子", "微小粒子", "熱能", "電子"], ans: 1, tip: "物質由微小粒子組成，溫度高→粒子間距增加→體積變大" },
-  { id: 14, stars: 1, text: "下列哪一項屬於「散熱」的做法？", opts: ["用保溫袋包住食物", "在杯子上加杯蓋", "用電風扇吹熱水", "穿羽絨外套"], ans: 2, tip: "電風扇加快空氣對流→加速散熱！" },
-  { id: 15, stars: 1, text: "保溫瓶的真空夾層可以阻隔哪些熱的傳播方式？", opts: ["只有傳導", "只有對流", "只有輻射", "傳導和對流"], ans: 3, tip: "真空中沒有物質→無法傳導也無法對流！" },
-
-  // Medium ★★
-  { id: 16, stars: 2, text: "夏天幫腳踏車輪胎打氣，為什麼不能打太滿？", opts: ["輪胎會變形", "氣體受熱膨脹，壓力過大會爆胎", "氣體遇熱收縮會漏氣", "溫度不影響輪胎"], ans: 1, tip: "夏天→氣溫高→空氣受熱膨脹→氣壓升高→可能爆胎！" },
-  { id: 17, stars: 2, text: "磁磚和橋面接縫處要留縫隙，是為了應對哪種現象？", opts: ["液體熱脹冷縮", "固體熱脹冷縮", "氣體熱脹冷縮", "輻射效應"], ans: 1, tip: "固體受熱膨脹，若沒有縫隙會互相擠壓破裂！" },
-  { id: 18, stars: 2, text: "將25℃的水放入水箱，再同時滴入50℃紅色水和10℃藍色水，請問紅色水會往哪個方向移動？", opts: ["往下沉", "往上升", "不移動", "先上升後下降"], ans: 1, tip: "溫度高→密度小→液體上升！紅色水50℃>25℃→往上升！" },
-  { id: 19, stars: 2, text: "冰箱被冰過的罐頭蓋子很難打開，蓋了熱抹布後就容易打開，這是應用什麼原理？", opts: ["固體熱脹冷縮", "液體熱脹冷縮", "氣體熱脹冷縮", "對流原理"], ans: 0, tip: "蓋子（固體）受熱→膨脹→蓋子和罐口的緊密度降低→容易打開！" },
-  { id: 20, stars: 2, text: "進行「遮蔽物對太陽熱輻射的影響」實驗，操縱變因是什麼？", opts: ["溫度計", "時間", "地點", "有無遮蔽物"], ans: 3, tip: "操縱變因=我們改變的那個條件；有無遮蔽物是我們改變的！" },
-  { id: 21, stars: 2, text: "太陽能熱水器的集熱板為什麼是深色的？", opts: ["深色反射熱輻射較多", "深色吸收熱輻射較多", "深色傳導熱較快", "深色對流效果較好"], ans: 1, tip: "深色物體吸熱多，淺色物體反射熱輻射多！" },
-  { id: 22, stars: 2, text: "羽絨外套的保暖原理主要是什麼？", opts: ["羽絨會產生熱能", "羽絨間的空氣阻隔熱傳導和對流", "羽絨反射熱輻射", "羽絨吸收外部熱量"], ans: 1, tip: "羽絨間的空隙→形成空氣層→空氣傳熱慢→阻隔外部冷空氣！" },
-  { id: 23, stars: 2, text: "葉片式電暖器放在地板上使用，是利用什麼原理讓室內變暖？", opts: ["傳導", "對流", "輻射", "傳導和輻射"], ans: 1, tip: "電暖器產生熱空氣→熱空氣上升→對流→整個房間變暖！" },
-  { id: 24, stars: 2, text: "下列哪個傳熱順序是正確的（傳導方向）？", opts: ["低溫傳到高溫", "高溫傳到低溫", "溫度相同才能傳熱", "由外向內傳熱"], ans: 1, tip: "熱永遠從高溫傳到低溫，就像水從高處往低處流！" },
-  { id: 25, stars: 2, text: "氣炸鍋加熱食物的主要原理是？", opts: ["輻射加熱食物", "利用熱對流循環熱風", "直接傳導加熱", "真空加熱"], ans: 1, tip: "氣炸鍋有風扇讓高溫熱風循環→熱對流→使食物快速加熱！" },
-  { id: 26, stars: 2, text: "鋁箔盤在甲處加熱，A、B、C三個位置哪個蠟最慢熔化（甲處在A旁邊）？", opts: ["A", "B", "C", "三個同時熔化"], ans: 2, tip: "傳導由近到遠，距離加熱處最遠的C溫度最低，蠟最慢熔化！" },
-  { id: 27, stars: 2, text: "白色太空衣的設計原理是什麼？", opts: ["白色導熱效果好", "白色減少吸收太陽熱輻射", "白色增加熱對流", "白色阻隔熱傳導"], ans: 1, tip: "白色（淺色）反射熱輻射多，吸收少→避免太空人被太陽烤傷！" },
-  { id: 28, stars: 2, text: "台北市立圖書館北投分館的高低窗設計，是應用哪種熱傳播方式來散熱？", opts: ["傳導", "對流", "輻射", "熱脹冷縮"], ans: 1, tip: "高低窗讓室內空氣對流→熱空氣從高窗排出→冷空氣從低窗進入！" },
-  { id: 29, stars: 2, text: "為什麼在樹蔭下感覺比較涼快？", opts: ["樹葉降低空氣溫度", "樹葉遮擋了太陽的熱輻射", "樹葉讓空氣對流更快", "樹葉吸收所有熱量"], ans: 1, tip: "樹葉是遮蔽物→阻擋太陽的熱輻射→到達地面的熱量減少！" },
-  { id: 30, stars: 2, text: "下列哪一項不屬於「固體熱脹冷縮」的例子？", opts: ["橋面接縫處留空隙", "電線預留弧度", "夏天輪胎氣打太滿會爆", "磁磚間留縫隙"], ans: 2, tip: "輪胎裡面是空氣（氣體），屬於氣體熱脹冷縮！" },
-
-  // Hard ★★★
-  { id: 31, stars: 3, text: "【綜合應用】保溫瓶的內膽表面拋光處理，是為了減緩哪種熱的傳播？", opts: ["傳導", "對流", "輻射", "傳導和對流"], ans: 2, tip: "拋光表面→光滑反射面→反射熱輻射→減少輻射散熱！" },
-  { id: 32, stars: 3, text: "【實驗分析】「液體熱對流」實驗中，要讓紅色熱水和藍色冷水的對流現象更明顯，下列哪個方法最有效？", opts: ["增加水箱中的水量", "使熱水和冷水溫度差更大", "減少滴入的顏料水量", "使用更大的滴管"], ans: 1, tip: "溫度差越大→密度差越大→對流現象越明顯！" },
-  { id: 33, stars: 3, text: "【跨概念】氣體膨脹係數遠大於固體，為什麼夏天磁磚（固體）仍然需要留縫隙，而不是氣體更需要注意？", opts: ["固體的力量更大，膨脹時破壞力更強", "氣體膨脹有彈性不會破壞周圍物品", "固體傳熱更快所以影響更大", "以上都不對"], ans: 1, tip: "氣體有彈性，膨脹時可以自由擴散；固體膨脹時若被限制，產生的壓力會破壞周圍物品！" },
-  { id: 34, stars: 3, text: "【變因分析】進行「遮蔽物對太陽熱輻射影響」實驗，下列哪一項屬於「控制變因」（必須保持相同的條件）？", opts: ["有無遮蔽物", "溫度計測量到的溫度", "放置的地點和時間", "以上都是控制變因"], ans: 2, tip: "控制變因=保持相同的條件（地點、時間、溫度計）；操縱變因=改變的條件（有無遮蔽物）；應變變因=觀察的結果（溫度）" },
-  { id: 35, stars: 3, text: "【深度思考】水在0～4℃之間有「熱縮冷脹」的特性，與一般物質相反。請問，湖泊在冬天結冰時，哪個現象是因為這個特性造成的？", opts: ["整個湖從底部開始結冰", "湖面先結冰，深處保持液態", "湖水全部同時結冰", "湖水不會結冰"], ans: 1, tip: "水在4℃密度最大（沉到底），更冷的水（接近0℃）反而浮在上面，所以湖面先結冰，底部水溫維持約4℃保護水中生物！" },
-  { id: 36, stars: 3, text: "【設計應用】設計一個保溫杯比賽，小翔在玻璃杯外包棉花（減緩傳導和對流）再包鋁箔紙（減少輻射），請問與只包棉花的設計比較，鋁箔紙對保溫效果的改善主要針對哪種傳熱方式？", opts: ["傳導", "對流", "輻射", "傳導和對流"], ans: 2, tip: "棉花已處理傳導和對流，再加鋁箔紙→反射熱輻射→減少輻射散熱→整體保溫效果更好！" },
-  { id: 37, stars: 3, text: "【整合比較】固體、液體、氣體三種形態受熱後，哪個熱脹冷縮的幅度最大？", opts: ["固體最大", "液體最大", "氣體最大", "三種形態相同"], ans: 2, tip: "氣體脹最多>液體>固體最少！這是因為氣體粒子間距離大，受熱後膨脹空間最大！" },
-  { id: 38, stars: 3, text: "【生活應用綜合】一杯熱咖啡，以下哪種保存方式能讓它維持最久的溫度？", opts: ["放在鐵盤上，不加蓋", "放在玻璃杯中，不加蓋", "放在保溫瓶中，蓋好蓋子", "用電風扇吹，加速對流"], ans: 2, tip: "保溫瓶：蓋子→阻隔對流；真空夾層→阻隔傳導和對流；內膽拋光→反射輻射。三種傳熱方式都被阻隔！" },
-  { id: 39, stars: 3, text: "【跨領域】都市熱島效應（城市比郊區熱）的成因之一是「柏油、水泥等建材蓄熱量高」，這和哪種熱傳播方式最相關？", opts: ["只和對流有關", "只和輻射有關", "和傳導及輻射都有關", "只和傳導有關"], ans: 2, tip: "深色柏油吸收太陽熱輻射（輻射），然後通過傳導慢慢釋放熱量到周圍空氣，同時都市減少綠地→減少蒸散冷卻效果！" },
-  { id: 40, stars: 3, text: "【最終BOSS】北投圖書館的「右邊尖角面向西方」設計，是為了解決什麼問題？請選最完整的答案。", opts: ["只是為了美觀", "讓建築物避免受到強烈西曬，減少太陽熱輻射進入室內", "增加建築物的對流散熱效果", "讓傳導散熱效果更好"], ans: 1, tip: "西曬=下午太陽從西邊照射很強烈。尖角朝西→建築物側面較窄→減少受到西曬的面積→減少熱輻射吸收→室內更涼快！" },
+  {id:1,stars:1,text:"氣體受熱後，體積會如何變化？",opts:["收縮變小","膨脹變大","保持不變","先膨脹後收縮"],ans:1,tip:"記口訣：受熱→膨脹，遇冷→收縮！"},
+  {id:2,stars:1,text:"液體受冷後，體積會如何變化？",opts:["膨脹變大","保持不變","收縮變小","消失不見"],ans:2,tip:"固、液、氣三態遇冷都收縮！"},
+  {id:3,stars:1,text:"下列哪一項是「氣體」熱脹冷縮的例子？",opts:["磁磚間留縫隙","氣溫計液柱上升","熱氣球加熱後膨脹變大","橋面預留縫隙"],ans:2,tip:"熱氣球裡面是空氣（氣體）！"},
+  {id:4,stars:1,text:"熱透過固體由高溫傳到低溫的方式稱為？",opts:["對流","輻射","傳導","熱脹"],ans:2,tip:"固體→傳導，液氣→對流，太陽→輻射"},
+  {id:5,stars:1,text:"液體和氣體主要的傳熱方式是？",opts:["傳導","對流","輻射","熱脹冷縮"],ans:1,tip:"液體氣體會流動，所以靠「對流」傳熱！"},
+  {id:6,stars:1,text:"太陽的熱傳到地球，是透過哪種方式？",opts:["傳導","對流","輻射","熱脹"],ans:2,tip:"地球和太陽之間幾乎沒有物質，只有輻射不需要介質！"},
+  {id:7,stars:1,text:"要達到保溫效果，應該怎麼做？",opts:["加快熱傳播速度","阻隔或減緩熱的傳播","讓熱對流更快","增加輻射面積"],ans:1,tip:"保溫=減緩熱傳播；散熱=加快熱傳播"},
+  {id:8,stars:1,text:"平底鍋的鍋身（接觸熱源部分）通常使用什麼材質？",opts:["塑膠","木材","金屬","玻璃"],ans:2,tip:"金屬傳熱快→鍋身；非金屬傳熱慢→握把"},
+  {id:9,stars:1,text:"冷氣機通常裝在房間的哪個位置？",opts:["地板","中間","上方","任何位置都一樣"],ans:2,tip:"冷空氣密度大會下降，裝上方可以讓整個房間變涼！"},
+  {id:10,stars:1,text:"把熱水放入較大開口的容器，和放入小開口容器比較，哪個降溫較快？",opts:["小開口容器","大開口容器","一樣快","無法判斷"],ans:1,tip:"開口大→接觸空氣面積大→對流快→散熱快！"},
+  {id:11,stars:1,text:"銅球加熱後無法穿過銅環，是因為銅球的體積？",opts:["縮小","不變","膨脹變大","消失"],ans:2,tip:"固體受熱→體積膨脹→銅球變大→無法穿過！"},
+  {id:12,stars:1,text:"氣溫計液柱隨溫度升高而上升，這是哪種熱脹冷縮的例子？",opts:["氣體","液體","固體","真空"],ans:1,tip:"氣溫計裡面的酒精或水銀是液體！"},
+  {id:13,stars:1,text:"物質是由什麼組成的？",opts:["分子和原子","微小粒子","熱能","電子"],ans:1,tip:"物質由微小粒子組成，溫度高→粒子間距增加→體積變大"},
+  {id:14,stars:1,text:"下列哪一項屬於「散熱」的做法？",opts:["用保溫袋包住食物","在杯子上加杯蓋","用電風扇吹熱水","穿羽絨外套"],ans:2,tip:"電風扇加快空氣對流→加速散熱！"},
+  {id:15,stars:1,text:"保溫瓶的真空夾層可以阻隔哪些熱的傳播方式？",opts:["只有傳導","只有對流","只有輻射","傳導和對流"],ans:3,tip:"真空中沒有物質→無法傳導也無法對流！"},
+  {id:16,stars:2,text:"夏天幫腳踏車輪胎打氣，為什麼不能打太滿？",opts:["輪胎會變形","氣體受熱膨脹，壓力過大會爆胎","氣體遇熱收縮會漏氣","溫度不影響輪胎"],ans:1,tip:"夏天→氣溫高→空氣受熱膨脹→氣壓升高→可能爆胎！"},
+  {id:17,stars:2,text:"磁磚和橋面接縫處要留縫隙，是為了應對哪種現象？",opts:["液體熱脹冷縮","固體熱脹冷縮","氣體熱脹冷縮","輻射效應"],ans:1,tip:"固體受熱膨脹，若沒有縫隙會互相擠壓破裂！"},
+  {id:18,stars:2,text:"將25℃的水放入水箱，再同時滴入50℃紅色水和10℃藍色水，請問紅色水會往哪個方向移動？",opts:["往下沉","往上升","不移動","先上升後下降"],ans:1,tip:"溫度高→密度小→液體上升！紅色水50℃>25℃→往上升！"},
+  {id:19,stars:2,text:"冰箱被冰過的罐頭蓋子很難打開，蓋了熱抹布後就容易打開，這是應用什麼原理？",opts:["固體熱脹冷縮","液體熱脹冷縮","氣體熱脹冷縮","對流原理"],ans:0,tip:"蓋子（固體）受熱→膨脹→蓋子和罐口的緊密度降低→容易打開！"},
+  {id:20,stars:2,text:"進行「遮蔽物對太陽熱輻射的影響」實驗，操縱變因是什麼？",opts:["溫度計","時間","地點","有無遮蔽物"],ans:3,tip:"操縱變因=我們改變的那個條件；有無遮蔽物是我們改變的！"},
+  {id:21,stars:2,text:"太陽能熱水器的集熱板為什麼是深色的？",opts:["深色反射熱輻射較多","深色吸收熱輻射較多","深色傳導熱較快","深色對流效果較好"],ans:1,tip:"深色物體吸熱多，淺色物體反射熱輻射多！"},
+  {id:22,stars:2,text:"羽絨外套的保暖原理主要是什麼？",opts:["羽絨會產生熱能","羽絨間的空氣阻隔熱傳導和對流","羽絨反射熱輻射","羽絨吸收外部熱量"],ans:1,tip:"羽絨間的空隙→形成空氣層→空氣傳熱慢→阻隔外部冷空氣！"},
+  {id:23,stars:2,text:"葉片式電暖器放在地板上使用，是利用什麼原理讓室內變暖？",opts:["傳導","對流","輻射","傳導和輻射"],ans:1,tip:"電暖器產生熱空氣→熱空氣上升→對流→整個房間變暖！"},
+  {id:24,stars:2,text:"下列哪個傳熱順序是正確的（傳導方向）？",opts:["低溫傳到高溫","高溫傳到低溫","溫度相同才能傳熱","由外向內傳熱"],ans:1,tip:"熱永遠從高溫傳到低溫，就像水從高處往低處流！"},
+  {id:25,stars:2,text:"氣炸鍋加熱食物的主要原理是？",opts:["輻射加熱食物","利用熱對流循環熱風","直接傳導加熱","真空加熱"],ans:1,tip:"氣炸鍋有風扇讓高溫熱風循環→熱對流→使食物快速加熱！"},
+  {id:26,stars:2,text:"鋁箔盤在甲處加熱，A、B、C三個位置哪個蠟最慢熔化（甲處在A旁邊）？",opts:["A","B","C","三個同時熔化"],ans:2,tip:"傳導由近到遠，距離加熱處最遠的C溫度最低，蠟最慢熔化！"},
+  {id:27,stars:2,text:"白色太空衣的設計原理是什麼？",opts:["白色導熱效果好","白色減少吸收太陽熱輻射","白色增加熱對流","白色阻隔熱傳導"],ans:1,tip:"白色（淺色）反射熱輻射多，吸收少→避免太空人被太陽烤傷！"},
+  {id:28,stars:2,text:"台北市立圖書館北投分館的高低窗設計，是應用哪種熱傳播方式來散熱？",opts:["傳導","對流","輻射","熱脹冷縮"],ans:1,tip:"高低窗讓室內空氣對流→熱空氣從高窗排出→冷空氣從低窗進入！"},
+  {id:29,stars:2,text:"為什麼在樹蔭下感覺比較涼快？",opts:["樹葉降低空氣溫度","樹葉遮擋了太陽的熱輻射","樹葉讓空氣對流更快","樹葉吸收所有熱量"],ans:1,tip:"樹葉是遮蔽物→阻擋太陽的熱輻射→到達地面的熱量減少！"},
+  {id:30,stars:2,text:"下列哪一項不屬於「固體熱脹冷縮」的例子？",opts:["橋面接縫處留空隙","電線預留弧度","夏天輪胎氣打太滿會爆","磁磚間留縫隙"],ans:2,tip:"輪胎裡面是空氣（氣體），屬於氣體熱脹冷縮！"},
+  {id:31,stars:3,text:"【綜合應用】保溫瓶的內膽表面拋光處理，是為了減緩哪種熱的傳播？",opts:["傳導","對流","輻射","傳導和對流"],ans:2,tip:"拋光表面→光滑反射面→反射熱輻射→減少輻射散熱！"},
+  {id:32,stars:3,text:"【實驗分析】「液體熱對流」實驗中，要讓對流現象更明顯，下列哪個方法最有效？",opts:["增加水箱中的水量","使熱水和冷水溫度差更大","減少滴入的顏料水量","使用更大的滴管"],ans:1,tip:"溫度差越大→密度差越大→對流現象越明顯！"},
+  {id:33,stars:3,text:"【跨概念】氣體膨脹係數遠大於固體，為什麼夏天磁磚（固體）仍需要留縫隙？",opts:["固體力量大，膨脹時破壞力更強","氣體膨脹有彈性不會破壞周圍物品","固體傳熱更快所以影響更大","以上都不對"],ans:1,tip:"氣體有彈性可自由擴散；固體膨脹時若被限制，壓力會破壞周圍物品！"},
+  {id:34,stars:3,text:"【變因分析】進行「遮蔽物對太陽熱輻射影響」實驗，下列哪一項屬於「控制變因」？",opts:["有無遮蔽物","溫度計測量到的溫度","放置的地點和時間","以上都是控制變因"],ans:2,tip:"控制變因=保持相同的條件（地點、時間、溫度計）；操縱變因=改變的條件（有無遮蔽物）；應變變因=觀察的結果（溫度）"},
+  {id:35,stars:3,text:"【深度思考】水在0～4℃之間有「熱縮冷脹」，湖泊在冬天結冰時，哪個現象是因為這個特性？",opts:["整個湖從底部開始結冰","湖面先結冰，深處保持液態","湖水全部同時結冰","湖水不會結冰"],ans:1,tip:"水在4℃密度最大（沉到底），更冷的水（接近0℃）反而浮在上面，所以湖面先結冰，底部維持約4℃保護水中生物！"},
+  {id:36,stars:3,text:"【設計應用】小翔在玻璃杯外包棉花（減緩傳導和對流）再包鋁箔紙，鋁箔紙主要針對哪種傳熱方式？",opts:["傳導","對流","輻射","傳導和對流"],ans:2,tip:"棉花已處理傳導和對流，再加鋁箔紙→反射熱輻射→減少輻射散熱→整體保溫效果更好！"},
+  {id:37,stars:3,text:"【整合比較】固體、液體、氣體三種形態受熱後，哪個熱脹冷縮的幅度最大？",opts:["固體最大","液體最大","氣體最大","三種形態相同"],ans:2,tip:"氣體脹最多>液體>固體最少！氣體粒子間距離大，受熱後膨脹空間最大！"},
+  {id:38,stars:3,text:"【生活應用綜合】一杯熱咖啡，以下哪種保存方式能讓它維持最久的溫度？",opts:["放在鐵盤上，不加蓋","放在玻璃杯中，不加蓋","放在保溫瓶中，蓋好蓋子","用電風扇吹，加速對流"],ans:2,tip:"保溫瓶：蓋子→阻隔對流；真空夾層→阻隔傳導和對流；內膽拋光→反射輻射。三種傳熱方式都被阻隔！"},
+  {id:39,stars:3,text:"【跨領域】都市熱島效應的成因之一是「柏油、水泥等建材蓄熱量高」，這和哪種熱傳播方式最相關？",opts:["只和對流有關","只和輻射有關","和傳導及輻射都有關","只和傳導有關"],ans:2,tip:"深色柏油吸收太陽熱輻射（輻射），然後通過傳導慢慢釋放熱量，同時都市減少綠地→減少蒸散冷卻效果！"},
+  {id:40,stars:3,text:"【最終BOSS】北投圖書館「右邊尖角面向西方」的設計，是為了解決什麼問題？",opts:["只是為了美觀","讓建築物避免強烈西曬，減少太陽熱輻射進入室內","增加建築物的對流散熱效果","讓傳導散熱效果更好"],ans:1,tip:"西曬=下午太陽從西邊照射很強烈。尖角朝西→建築物側面較窄→減少受到西曬的面積→減少熱輻射吸收→室內更涼快！"}
 ];
 
-// ============================================================
-// COMPONENTS
-// ============================================================
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let studentName   = "";
+let currentFilter = 0;
+let selected      = {};   // {qid: optionIndex}
+let revealed      = {};   // {qid: true}
+let timerStart    = null;
+let timerInterval = null;
+let timerSec      = 0;
 
-function HeatExpansionDiagram() {
-  return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ ...styles.sectionTitle(palette.orange) }}>
-        <span style={styles.emoji}>🌡️</span> 熱脹冷縮對比圖
-      </div>
-      <div style={styles.compareRow}>
-        {[
-          { label: "氣體 Gas", icon: "💨", heatColor: palette.orange, coldColor: palette.blue, heatDesc: "體積大幅膨脹", coldDesc: "體積大幅縮小", example: "熱氣球、輪胎" },
-          { label: "液體 Liquid", icon: "💧", heatColor: "#FF8C42", coldColor: "#4A90D9", heatDesc: "體積中等膨脹", coldDesc: "體積中等縮小", example: "氣溫計液柱" },
-          { label: "固體 Solid", icon: "🪨", heatColor: "#FFB347", coldColor: "#6BA3BE", heatDesc: "體積微量膨脹", coldDesc: "體積微量縮小", example: "橋面、磁磚縫" },
-        ].map((item, i) => (
-          <div key={i} style={styles.compareCell(palette.lightYellow, palette.yellow)}>
-            <div style={{ fontSize: 24, marginBottom: 4 }}>{item.icon}</div>
-            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: palette.dark }}>{item.label}</div>
-            <div style={{ background: `${item.heatColor}22`, border: `1.5px solid ${item.heatColor}`, borderRadius: 8, padding: "6px 8px", marginBottom: 6 }}>
-              <div style={{ fontSize: 11, color: item.heatColor, fontWeight: 700 }}>🔴 受熱</div>
-              <div style={{ fontSize: 11, color: palette.dark }}>{item.heatDesc}</div>
-            </div>
-            <div style={{ background: `${item.coldColor}22`, border: `1.5px solid ${item.coldColor}`, borderRadius: 8, padding: "6px 8px", marginBottom: 6 }}>
-              <div style={{ fontSize: 11, color: item.coldColor, fontWeight: 700 }}>🔵 遇冷</div>
-              <div style={{ fontSize: 11, color: palette.dark }}>{item.coldDesc}</div>
-            </div>
-            <div style={{ fontSize: 10, color: palette.gray, marginTop: 4 }}>例：{item.example}</div>
-          </div>
-        ))}
-      </div>
-      <div style={styles.memBox(palette.lightYellow, palette.yellow)}>
-        <div style={styles.memTitle(palette.orange)}>🧠 超強記憶口訣</div>
-        <div style={{ fontSize: 14, color: palette.dark, fontWeight: 600 }}>
-          「氣 &gt; 液 &gt; 固，受熱都膨脹，遇冷都收縮！」
-        </div>
-        <div style={{ fontSize: 12, color: palette.gray, marginTop: 4 }}>
-          氣體脹最多 &gt; 液體其次 &gt; 固體脹最少（但力量最強！）
-        </div>
-      </div>
-    </div>
-  );
+// ══════════════════════════════════════════
+//  TAB SWITCHING
+// ══════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById("sec-" + tab).classList.add("active");
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    if (btn.dataset.tab === tab) {
+      btn.classList.add("active");
+      btn.style.background = btn.dataset.color;
+      btn.style.boxShadow  = "0 3px 10px " + btn.dataset.color + "55";
+      btn.style.color      = "#fff";
+    } else {
+      btn.classList.remove("active");
+      btn.style.background = "#fff";
+      btn.style.boxShadow  = "none";
+      btn.style.color      = "#636E72";
+    }
+  });
 }
 
-function HeatTransferDiagram() {
-  const methods = [
-    {
-      name: "傳導 Conduction",
-      icon: "🍳",
-      color: palette.orange,
-      light: palette.lightOrange,
-      who: "固體",
-      direction: "高溫 → 低溫",
-      needMaterial: "需要物質",
-      speed: "金屬快、非金屬慢",
-      examples: ["鐵湯匙放熱湯中變燙", "平底鍋鍋身用金屬", "隔熱手套用布/塑膠"],
-      memory: "固體直線傳，快慢看材質！",
-    },
-    {
-      name: "對流 Convection",
-      icon: "🌊",
-      color: palette.blue,
-      light: palette.lightBlue,
-      who: "液體、氣體",
-      direction: "熱的上升、冷的下降",
-      needMaterial: "需要流體",
-      speed: "溫差越大越快",
-      examples: ["煮湯時食物上下滾動", "冷氣裝上方", "電暖器放地板"],
-      memory: "液氣熱上升，冷下降循環！",
-    },
-    {
-      name: "輻射 Radiation",
-      icon: "☀️",
-      color: palette.pink,
-      light: palette.lightPink,
-      who: "所有物體（絕對零度以上）",
-      direction: "四面八方向外傳播",
-      needMaterial: "不需要物質！",
-      speed: "光速（電磁波）",
-      examples: ["太陽熱傳到地球", "白色太空衣隔熱", "深色集熱板吸熱"],
-      memory: "輻射最特別，真空也能傳！",
-    },
+// ══════════════════════════════════════════
+//  STUDENT NAME
+// ══════════════════════════════════════════
+function startEditName() {
+  document.getElementById("nameDisplay").style.display  = "none";
+  document.getElementById("nameInput").style.display    = "inline-block";
+  document.getElementById("nameConfirm").style.display  = "inline-block";
+  document.getElementById("nameInput").value = studentName;
+  document.getElementById("nameInput").focus();
+}
+function confirmName() {
+  studentName = document.getElementById("nameInput").value.trim();
+  const disp = document.getElementById("nameDisplay");
+  disp.textContent = studentName || "點此輸入姓名 ✏️";
+  disp.className   = studentName ? "filled" : "";
+  disp.style.display = "inline-block";
+  document.getElementById("nameInput").style.display   = "none";
+  document.getElementById("nameConfirm").style.display = "none";
+  document.getElementById("nameHint").style.display = studentName ? "inline" : "none";
+  document.getElementById("quizNameDisplay").textContent = studentName || "（請在上方輸入）";
+}
+
+// ══════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════
+function startTimer() {
+  if (timerStart) return;
+  timerStart = Date.now();
+  timerInterval = setInterval(() => {
+    timerSec = Math.floor((Date.now() - timerStart) / 1000);
+    const m = Math.floor(timerSec / 60);
+    const s = timerSec % 60;
+    const box = document.getElementById("timerBox");
+    box.textContent = "⏱ " + m + "分" + String(s).padStart(2,"0") + "秒";
+    box.classList.add("running");
+  }, 1000);
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById("timerBox").classList.remove("running");
+}
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerStart    = null;
+  timerInterval = null;
+  timerSec      = 0;
+  const box = document.getElementById("timerBox");
+  box.textContent = "⏱ 00分00秒";
+  box.classList.remove("running");
+}
+function fmtTime(s) {
+  return Math.floor(s/60) + "分" + String(s%60).padStart(2,"0") + "秒";
+}
+
+// ══════════════════════════════════════════
+//  PARTICLE DOTS
+// ══════════════════════════════════════════
+function renderDots() {
+  const configs = [
+    {id:"dots-cold", size:8,  color:"#118AB2"},
+    {id:"dots-room", size:9,  color:"#666666"},
+    {id:"dots-hot",  size:10, color:"#FF6B35"},
   ];
-  return (
-    <div>
-      <div style={{ ...styles.sectionTitle(palette.blue) }}>
-        <span style={styles.emoji}>🔥</span> 三大傳熱方式比較
-      </div>
-      {methods.map((m, i) => (
-        <div key={i} style={{ ...styles.card(m.light, m.color), marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <span style={{ fontSize: 28 }}>{m.icon}</span>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 16, color: m.color }}>{m.name}</div>
-              <div style={{ fontSize: 12, color: palette.gray }}>主要發生在：{m.who}</div>
-            </div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
-            <div style={{ background: `${m.color}15`, borderRadius: 8, padding: "8px 10px" }}>
-              <div style={{ fontSize: 11, color: m.color, fontWeight: 700 }}>傳播方向</div>
-              <div style={{ fontSize: 12, color: palette.dark }}>{m.direction}</div>
-            </div>
-            <div style={{ background: `${m.color}15`, borderRadius: 8, padding: "8px 10px" }}>
-              <div style={{ fontSize: 11, color: m.color, fontWeight: 700 }}>需要介質？</div>
-              <div style={{ fontSize: 12, color: palette.dark }}>{m.needMaterial}</div>
-            </div>
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 11, color: palette.gray, marginBottom: 4 }}>📌 生活例子：</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {m.examples.map((ex, j) => (
-                <span key={j} style={{ ...styles.badge(`${m.color}20`, m.color), fontSize: 11 }}>{ex}</span>
-              ))}
-            </div>
-          </div>
-          <div style={{ background: palette.lightYellow, borderRadius: 8, padding: "6px 10px", border: `1px dashed ${palette.yellow}` }}>
-            <span style={{ fontSize: 11, color: palette.orange, fontWeight: 700 }}>🧠 記憶點：</span>
-            <span style={{ fontSize: 11, color: palette.dark }}> {m.memory}</span>
-          </div>
-        </div>
-      ))}
-      <div style={{ ...styles.memBox(palette.lightPink, palette.pink) }}>
-        <div style={styles.memTitle(palette.pink)}>🎯 三種傳熱超級比一比</div>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-            <thead>
-              <tr style={{ background: palette.pink }}>
-                {["項目", "傳導", "對流", "輻射"].map((h, i) => (
-                  <th key={i} style={{ padding: "6px 10px", color: "#fff", textAlign: "center", fontWeight: 600 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["適用形態", "固體", "液體、氣體", "所有物體"],
-                ["需要介質", "✅ 需要", "✅ 需要", "❌ 不需要"],
-                ["傳播原理", "粒子振動傳熱", "流體循環流動", "電磁波輻射"],
-                ["生活應用", "鍋具設計", "冷氣/暖器位置", "遮陽傘/白牆"],
-              ].map((row, ri) => (
-                <tr key={ri} style={{ background: ri % 2 === 0 ? "#fff8" : "#fff0" }}>
-                  {row.map((cell, ci) => (
-                    <td key={ci} style={{ padding: "6px 10px", textAlign: "center", borderBottom: "1px solid #eee", color: palette.dark }}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+  configs.forEach(cfg => {
+    const el = document.getElementById(cfg.id);
+    if (!el) return;
+    el.innerHTML = "";
+    for (let i = 0; i < 9; i++) {
+      const d = document.createElement("div");
+      d.style.cssText = "width:"+cfg.size+"px;height:"+cfg.size+"px;border-radius:50%;background:"+cfg.color+";opacity:0.7;flex-shrink:0";
+      el.appendChild(d);
+    }
+  });
 }
 
-function InsulationDiagram() {
-  return (
-    <div>
-      <div style={{ ...styles.sectionTitle(palette.green) }}>
-        <span style={styles.emoji}>🧊</span> 保溫 vs 散熱
-      </div>
-      <div style={styles.row3}>
-        <div style={styles.miniCard(palette.lightBlue, palette.blue)}>
-          <div style={{ fontSize: 32 }}>🏺</div>
-          <div style={{ fontWeight: 700, color: palette.blue, fontSize: 14, marginTop: 6 }}>保溫原理</div>
-          <div style={{ fontSize: 12, color: palette.dark, marginTop: 6 }}>阻隔或減緩熱的傳播速度</div>
-          <div style={{ fontSize: 11, color: palette.gray, marginTop: 4 }}>→ 維持物品原本的溫度</div>
-        </div>
-        <div style={styles.miniCard(palette.lightOrange, palette.orange)}>
-          <div style={{ fontSize: 32 }}>💨</div>
-          <div style={{ fontWeight: 700, color: palette.orange, fontSize: 14, marginTop: 6 }}>散熱原理</div>
-          <div style={{ fontSize: 12, color: palette.dark, marginTop: 6 }}>加快熱的傳播速度</div>
-          <div style={{ fontSize: 11, color: palette.gray, marginTop: 4 }}>→ 讓物品快速降溫</div>
-        </div>
-        <div style={styles.miniCard(palette.lightGreen, palette.green)}>
-          <div style={{ fontSize: 32 }}>🌿</div>
-          <div style={{ fontWeight: 700, color: palette.green, fontSize: 14, marginTop: 6 }}>綠建築設計</div>
-          <div style={{ fontSize: 12, color: palette.dark, marginTop: 6 }}>結合保溫+散熱，節能減碳</div>
-          <div style={{ fontSize: 11, color: palette.gray, marginTop: 4 }}>北投圖書館為代表</div>
-        </div>
-      </div>
-      <div style={{ ...styles.card(palette.lightBlue, palette.blue), marginBottom: 12 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: palette.blue, marginBottom: 10 }}>🏺 保溫瓶解剖圖（記憶神器！）</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-          {[
-            { part: "瓶蓋", icon: "🔵", block: ["傳導", "對流"], color: palette.blue },
-            { part: "內膽（拋光）", icon: "⭕", block: ["輻射"], color: palette.pink },
-            { part: "真空夾層", icon: "🟣", block: ["傳導", "對流"], color: palette.purple },
-          ].map((item, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: 10, padding: "10px", border: `1.5px solid ${item.color}` }}>
-              <div style={{ textAlign: "center", fontSize: 20 }}>{item.icon}</div>
-              <div style={{ textAlign: "center", fontWeight: 700, fontSize: 12, color: item.color, marginBottom: 4 }}>{item.part}</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, justifyContent: "center" }}>
-                {item.block.map((b, j) => (
-                  <span key={j} style={{ ...styles.badge(`${item.color}20`, item.color), fontSize: 10 }}>阻{b}</span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div style={{ ...styles.card(palette.lightOrange, palette.orange) }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: palette.orange, marginBottom: 10 }}>🏙️ 北投圖書館散熱設計</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          {[
-            { design: "屋頂種植花草", principle: "輻射隔熱", icon: "🌱", detail: "植物遮擋太陽熱輻射" },
-            { design: "垂直木格柵", principle: "輻射隔熱", icon: "🪵", detail: "減少陽光照進室內" },
-            { design: "高低窗設計", principle: "對流散熱", icon: "🪟", detail: "熱空氣從高窗排出" },
-            { design: "尖角朝西設計", principle: "輻射隔熱", icon: "📐", detail: "減少西曬面積" },
-          ].map((item, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: 10, padding: "10px", border: `1px solid ${palette.yellow}` }}>
-              <div style={{ fontSize: 18 }}>{item.icon} <span style={{ fontWeight: 600, fontSize: 12, color: palette.dark }}>{item.design}</span></div>
-              <span style={styles.badge(palette.lightOrange, palette.orange)}>{item.principle}</span>
-              <div style={{ fontSize: 11, color: palette.gray, marginTop: 4 }}>{item.detail}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+// ══════════════════════════════════════════
+//  QUIZ RENDERING
+// ══════════════════════════════════════════
+function getFiltered() {
+  return currentFilter === 0 ? questions : questions.filter(q => q.stars === currentFilter);
 }
 
-function ParticleDiagram() {
-  return (
-    <div>
-      <div style={{ ...styles.sectionTitle(palette.purple) }}>
-        <span style={styles.emoji}>🔬</span> 微觀視角：粒子與熱脹冷縮
-      </div>
-      <div style={styles.row3}>
-        {[
-          { label: "低溫", bg: palette.lightBlue, border: palette.blue, desc: "粒子間距縮小", size: 8, gap: 4, color: palette.blue },
-          { label: "室溫", bg: "#F5F5F5", border: "#888", desc: "粒子間距適中", size: 9, gap: 7, color: "#666" },
-          { label: "高溫", bg: palette.lightOrange, border: palette.orange, desc: "粒子間距增大", size: 10, gap: 11, color: palette.orange },
-        ].map((state, si) => (
-          <div key={si} style={{ ...styles.miniCard(state.bg, state.border), padding: "12px 8px" }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: state.color, marginBottom: 8 }}>{state.label}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: state.gap, marginBottom: 8, minHeight: 60 }}>
-              {[...Array(9)].map((_, pi) => (
-                <div key={pi} style={{ width: state.size, height: state.size, borderRadius: "50%", background: state.color, opacity: 0.7 }} />
-              ))}
-            </div>
-            <div style={{ fontSize: 11, color: palette.dark }}>{state.desc}</div>
-            <div style={{ fontSize: 10, color: palette.gray, marginTop: 2 }}>{state.label === "高溫" ? "→ 體積變大" : state.label === "低溫" ? "→ 體積變小" : "→ 正常體積"}</div>
-          </div>
-        ))}
-      </div>
-      <div style={styles.memBox(palette.lightPurple, palette.purple)}>
-        <div style={styles.memTitle(palette.purple)}>🔬 科學原理（有深度的補充）</div>
-        <div style={{ fontSize: 13, color: palette.dark, lineHeight: 1.8 }}>
-          物質由微小粒子組成，粒子不停振動：<br />
-          • 溫度高 → 粒子振動幅度加大 → 間距增加 → <b>體積膨脹</b><br />
-          • 溫度低 → 粒子振動幅度減小 → 間距縮小 → <b>體積收縮</b><br />
-          • 特例：水在 0~4°C 是「熱縮冷脹」→ 湖泊冬天表面先結冰，底部保持液態保護生物！
-        </div>
-      </div>
-    </div>
-  );
+function renderQuiz() {
+  const container = document.getElementById("quizContainer");
+  const filtered  = getFiltered();
+  container.innerHTML = filtered.map(q => buildQCard(q)).join("");
 }
 
-function QuizSection() {
-  const [selected, setSelected] = useState({});
-  const [shown, setShown] = useState({});
-  const [filter, setFilter] = useState(0);
-  const [score, setScore] = useState(null);
+function buildQCard(q) {
+  const starColors = {1:{bg:"#E8F4FA",c:"#118AB2"},2:{bg:"#FFF3EE",c:"#FF6B35"},3:{bg:"#FFF0F3",c:"#EF476F"}};
+  const sc   = starColors[q.stars];
+  const sel  = selected[q.id];
+  const isRev = revealed[q.id];
+  const starLabel = q.stars===1?"基礎":q.stars===2?"進階":"挑戰";
 
-  const filtered = filter === 0 ? questions : questions.filter(q => q.stars === filter);
+  const optsHtml = q.opts.map((opt, oi) => {
+    let cls = "opt-btn";
+    let prefix = String.fromCharCode(65+oi) + ". ";
+    if (isRev) {
+      cls += " revealed";
+      if (oi === q.ans)   { cls += " correct"; prefix = "✅ " + prefix; }
+      else if (oi === sel){ cls += " wrong";   prefix = "❌ " + prefix; }
+    } else if (oi === sel) {
+      cls += " selected";
+    }
+    return `<button class="${cls}" onclick="selectOpt(${q.id},${oi})">${prefix}${escHtml(opt)}</button>`;
+  }).join("");
 
-  const handleSelect = (qid, oidx) => {
-    if (shown[qid]) return;
-    setSelected(s => ({ ...s, [qid]: oidx }));
+  const checkBtn = (!isRev && sel !== undefined)
+    ? `<button class="check-btn" onclick="revealQ(${q.id})">確認答案</button>` : "";
+
+  let tipHtml = "";
+  if (isRev) {
+    const tipCls = q.stars===1 ? "tip-box green" : "tip-box";
+    tipHtml = `<div class="${tipCls}">💡 ${q.stars>=2?"解題提示：":""}${escHtml(q.tip)}</div>`;
+  }
+
+  return `<div class="q-card" id="qc-${q.id}">
+    <div class="q-head">
+      <span class="star-badge" style="background:${sc.bg};color:${sc.c}">${"★".repeat(q.stars)} ${starLabel}</span>
+      <div class="q-text">${q.id}. ${escHtml(q.text)}</div>
+    </div>
+    <div>${optsHtml}</div>
+    ${checkBtn}${tipHtml}
+  </div>`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function selectOpt(qid, oi) {
+  if (revealed[qid]) return;
+  if (!timerStart) startTimer();
+  selected[qid] = oi;
+  // Re-render just this card
+  const q = questions.find(x => x.id === qid);
+  const card = document.getElementById("qc-"+qid);
+  if (card) card.outerHTML = buildQCard(q);
+}
+
+function revealQ(qid) {
+  if (selected[qid] === undefined) return;
+  revealed[qid] = true;
+  const q = questions.find(x => x.id === qid);
+  const card = document.getElementById("qc-"+qid);
+  if (card) card.outerHTML = buildQCard(q);
+}
+
+// ══════════════════════════════════════════
+//  FILTER
+// ══════════════════════════════════════════
+function setFilter(diff, btn) {
+  currentFilter = diff;
+  resetQuiz();
+  document.querySelectorAll("#diffFilter .tab-btn").forEach(b => {
+    if (b === btn) {
+      b.classList.add("active");
+      b.style.background = b.dataset.color;
+      b.style.color = "#fff";
+      b.style.boxShadow = "0 3px 10px " + b.dataset.color + "55";
+    } else {
+      b.classList.remove("active");
+      b.style.background = "#fff";
+      b.style.color = "#636E72";
+      b.style.boxShadow = "none";
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+//  CALC SCORE + GAS SUBMIT
+// ══════════════════════════════════════════
+async function calcScore() {
+  const all     = getFiltered();
+  let correct   = 0;
+  const wrongList  = [];
+  const wrongTexts = [];
+
+  all.forEach(q => {
+    if (selected[q.id] === q.ans) {
+      correct++;
+    } else {
+      wrongList.push("第"+q.id+"題");
+      wrongTexts.push(q.text.slice(0,20));
+    }
+  });
+
+  const total    = all.length;
+  const wrong    = total - correct;
+  const pct      = Math.round(correct / total * 100);
+  const timeSec  = timerStart ? Math.floor((Date.now()-timerStart)/1000) : 0;
+  stopTimer();
+
+  const diffLabels = {0:"全部(40題)",1:"★基礎(15題)",2:"★★進階(15題)",3:"★★★挑戰(10題)"};
+
+  // ── 顯示分數卡片 ──
+  const pctColor = pct>=90?"#06D6A0":pct>=70?"#FF6B35":"#EF476F";
+  const cardBg   = pct>=90?"#E8FFF8":pct>=70?"#FFFBEE":"#FFF0F3";
+  const cardBdr  = pct>=90?"#06D6A0":pct>=70?"#FFD166":"#EF476F";
+
+  const cells = [
+    {label:"作答題數",val:total,unit:"題",color:"#118AB2"},
+    {label:"答對題數",val:correct,unit:"題",color:"#06D6A0"},
+    {label:"答錯題數",val:wrong,unit:"題",color:"#EF476F"},
+    {label:"正確率",val:pct,unit:"%",color:"#FF6B35"},
+    {label:"百分制",val:pct,unit:"分",color:"#7B2D8B"},
+    {label:"作答時間",val:fmtTime(timeSec),unit:"",color:"#636E72",small:true},
+  ];
+  const cellsHtml = cells.map(c=>`
+    <div class="score-cell">
+      <div class="score-cell-label">${c.label}</div>
+      <div class="score-cell-val${c.small?" small":""}" style="color:${c.color}">${c.val}<span style="font-size:11px">${c.unit}</span></div>
+    </div>`).join("");
+
+  const sc = document.getElementById("scoreCard");
+  sc.style.display = "block";
+  sc.innerHTML = `
+    <div class="score-card" style="background:${cardBg};border-color:${cardBdr}">
+      <div style="font-weight:700;font-size:17px;color:${pctColor};margin-bottom:10px">
+        ${correct===total?"🎉 完美！全部答對！":"📊 本次作答成績"}
+      </div>
+      <div class="score-grid">${cellsHtml}</div>
+      <div id="submitStatus"></div>
+    </div>`;
+
+  sc.scrollIntoView({behavior:"smooth",block:"start"});
+
+  // ── GAS 送出 ──
+  const statusEl = document.getElementById("submitStatus");
+
+  if (!studentName) {
+    statusEl.innerHTML = `<div class="status-box" style="background:#FFFBEE;border-color:#FFD166;color:#FF6B35">⚠️ 請先在上方輸入學生姓名，才能記錄到試算表！</div>`;
+    return;
+  }
+
+  statusEl.innerHTML = `<div class="status-box" style="background:#E8F4FA;border-color:#118AB2;color:#118AB2"><span style="font-size:16px">⏳</span> 正在上傳成績到 Google 試算表…</div>`;
+  document.getElementById("calcBtn").disabled = true;
+  document.getElementById("calcBtn").textContent = "⏳ 上傳中…";
+
+  const payload = {
+    studentName,
+    difficulty:   diffLabels[currentFilter],
+    totalQ:       total,
+    correctCount: correct,
+    wrongCount:   wrong,
+    percentage:   pct,
+    score100:     pct,
+    timeSec,
+    wrongList,
+    wrongTexts,
   };
 
-  const handleCheck = (qid) => {
-    if (selected[qid] === undefined) return;
-    setShown(s => ({ ...s, [qid]: true }));
-  };
-
-  const calcScore = () => {
-    let correct = 0;
-    const all = filter === 0 ? questions : filtered;
-    all.forEach(q => {
-      if (selected[q.id] === q.ans) correct++;
+  try {
+    await fetch(GAS_URL, {
+      method:  "POST",
+      mode:    "no-cors",
+      headers: {"Content-Type":"text/plain"},
+      body:    JSON.stringify(payload),
     });
-    setScore({ correct, total: all.length });
-  };
-
-  const reset = () => {
-    setSelected({});
-    setShown({});
-    setScore(null);
-  };
-
-  return (
-    <div>
-      <div style={{ ...styles.sectionTitle(palette.pink) }}>
-        <span style={styles.emoji}>📝</span> 練習題（共40題）
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
-        {[
-          { label: "全部 40題", val: 0, color: palette.gray },
-          { label: "★ 基礎 15題", val: 1, color: palette.blue },
-          { label: "★★ 進階 15題", val: 2, color: palette.orange },
-          { label: "★★★ 挑戰 10題", val: 3, color: palette.pink },
-        ].map(f => (
-          <button key={f.val} onClick={() => { setFilter(f.val); reset(); }}
-            style={{ ...styles.tab(filter === f.val, f.color), fontSize: 12 }}>
-            {f.label}
-          </button>
-        ))}
-      </div>
-      {score && (
-        <div style={{ ...styles.card(score.correct === score.total ? palette.lightGreen : palette.lightYellow, score.correct === score.total ? palette.green : palette.yellow), marginBottom: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, color: score.correct === score.total ? palette.green : palette.orange }}>
-            {score.correct === score.total ? "🎉 完美！全部答對！" : `📊 得分：${score.correct}/${score.total} 題`}
-          </div>
-          <div style={{ fontSize: 13, color: palette.dark, marginTop: 4 }}>
-            正確率：{Math.round(score.correct / score.total * 100)}%
-            {score.correct < score.total && " — 再複習錯誤的題目吧！"}
-          </div>
-        </div>
-      )}
-      {filtered.map((q) => {
-        const sel = selected[q.id];
-        const isShown = shown[q.id];
-        const isCorrect = sel === q.ans;
-        return (
-          <div key={q.id} style={styles.q}>
-            <div style={styles.qHead}>
-              <span style={styles.starBadge(q.stars)}>
-                {"★".repeat(q.stars)} {q.stars === 1 ? "基礎" : q.stars === 2 ? "進階" : "挑戰"}
-              </span>
-              <div style={{ fontSize: 13, color: "var(--color-text-primary)", fontWeight: 500, lineHeight: 1.5 }}>
-                {q.id}. {q.text}
-              </div>
-            </div>
-            <div style={{ marginLeft: 4 }}>
-              {q.opts.map((opt, oi) => (
-                <button key={oi} onClick={() => handleSelect(q.id, oi)}
-                  style={styles.optBtn(sel === oi, oi === q.ans, isShown)}>
-                  {isShown && oi === q.ans && "✅ "}
-                  {isShown && sel === oi && sel !== q.ans && "❌ "}
-                  {String.fromCharCode(65 + oi)}. {opt}
-                </button>
-              ))}
-            </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-              {!isShown && sel !== undefined && (
-                <button onClick={() => handleCheck(q.id)}
-                  style={{ background: palette.blue, color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
-                  確認答案
-                </button>
-              )}
-              {isShown && q.stars >= 2 && (
-                <div style={styles.tipBox}>
-                  💡 解題提示：{q.tip}
-                </div>
-              )}
-              {isShown && q.stars === 1 && (
-                <div style={{ ...styles.tipBox, background: palette.lightGreen, border: `2px solid ${palette.green}` }}>
-                  💡 {q.tip}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-      <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-        <button onClick={calcScore} style={{ background: palette.green, color: "#fff", border: "none", borderRadius: 12, padding: "10px 22px", fontSize: 14, cursor: "pointer", fontWeight: 600 }}>
-          🎯 計算分數
-        </button>
-        <button onClick={reset} style={{ background: "var(--color-background-secondary)", color: "var(--color-text-primary)", border: "1.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "10px 22px", fontSize: 14, cursor: "pointer" }}>
-          🔄 重新作答
-        </button>
-      </div>
-    </div>
-  );
+    statusEl.innerHTML = `<div class="status-box" style="background:#E8FFF8;border-color:#06D6A0;color:#06D6A0"><span style="font-size:16px">✅</span> 成績已成功記錄到 Google 試算表！學生：${escHtml(studentName)}，分數：${pct}分</div>`;
+  } catch(err) {
+    statusEl.innerHTML = `<div class="status-box" style="background:#FFF0F3;border-color:#EF476F;color:#EF476F">⚠️ 上傳失敗，請確認網路連線或 GAS URL 設定。</div>`;
+  } finally {
+    document.getElementById("calcBtn").disabled = false;
+    document.getElementById("calcBtn").textContent = "🎯 計算分數 + 記錄成績";
+  }
 }
 
-function KeyPoints() {
-  const points = [
-    { icon: "🌡️", title: "熱脹冷縮", color: palette.orange, items: ["氣體脹最多 > 液體 > 固體脹最少（但力量最強！）", "受熱 → 粒子間距增大 → 體積膨脹", "遇冷 → 粒子間距縮小 → 體積收縮", "例外：水在0~4℃是「熱縮冷脹」"] },
-    { icon: "🔥", title: "傳導（固體）", color: palette.orange, items: ["熱由高溫傳到低溫（固體為主）", "金屬傳熱快（銀>銅>鋁>鐵）", "非金屬傳熱慢（塑膠、木材、布、空氣）", "應用：鍋具設計（金屬鍋身+非金屬握把）"] },
-    { icon: "🌊", title: "對流（液體/氣體）", color: palette.blue, items: ["溫度高 → 液/氣密度小 → 上升", "溫度低 → 液/氣密度大 → 下降", "應用：冷氣裝上方、電暖器放地板、氣炸鍋", "沒有流動 = 沒有對流！"] },
-    { icon: "☀️", title: "輻射（不需介質）", color: palette.pink, items: ["不需要任何物質，真空中也能傳熱", "以電磁波（紅外線）傳播，光速！", "深色吸熱多；淺色（白色）反射多", "應用：遮陽傘、白色太空衣、深色集熱板"] },
-    { icon: "🧊", title: "保溫與散熱", color: palette.green, items: ["保溫 = 阻隔或減緩熱的傳播", "散熱 = 加快熱的傳播速度", "保溫瓶：蓋（傳導對流）、內膽拋光（輻射）、真空（傳導對流）", "都市熱島效應：深色建材+缺少綠地導致城市過熱"] },
-  ];
-  return (
-    <div>
-      <div style={{ ...styles.sectionTitle(palette.purple) }}>
-        <span style={styles.emoji}>📋</span> 單元重點總整理
-      </div>
-      {points.map((p, i) => (
-        <div key={i} style={{ ...styles.card(`${p.color}08`, p.color), marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-            <span style={{ fontSize: 24 }}>{p.icon}</span>
-            <div style={{ fontWeight: 700, fontSize: 15, color: p.color }}>{p.title}</div>
-          </div>
-          <ul style={{ margin: 0, paddingLeft: 20 }}>
-            {p.items.map((item, j) => (
-              <li key={j} style={{ fontSize: 13, color: palette.dark, marginBottom: 5, lineHeight: 1.6 }}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
-      
-  );
+// ══════════════════════════════════════════
+//  RESET
+// ══════════════════════════════════════════
+function resetQuiz() {
+  selected  = {};
+  revealed  = {};
+  resetTimer();
+  document.getElementById("scoreCard").style.display = "none";
+  document.getElementById("scoreCard").innerHTML = "";
+  renderQuiz();
 }
 
-// ============================================================
-// MAIN APP
-// ============================================================
-
-const TABS = [
-  { key: "expand", label: "🌡️ 熱脹冷縮", color: palette.orange },
-  { key: "particle", label: "🔬 粒子模型", color: palette.purple },
-  { key: "transfer", label: "🔥 傳熱方式", color: palette.blue },
-  { key: "insulation", label: "🧊 保溫散熱", color: palette.green },
-  { key: "summary", label: "📋 重點整理", color: palette.pink },
-  { key: "quiz", label: "📝 練習題40", color: "#FF6B35" },
-];
-
-export default function App() {
-  const [tab, setTab] = useState("expand");
-
-  return (
-    <div style={styles.app}>
-      <div style={styles.hero}>
-        <div style={{ fontSize: 36, marginBottom: 4 }}>🔥🌡️❄️</div>
-        <h1 style={styles.heroTitle}>第四單元：熱的作用與傳播</h1>
-        <p style={styles.heroSub}>國小五年級自然 ｜ 超強自學攻略 ｜ 40題練習</p>
-        <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 12 }}>
-          {[["活動一", "熱脹冷縮", "🌡️"], ["活動二", "熱的傳播", "🔥"], ["活動三", "保溫散熱", "🧊"]].map(([act, name, icon], i) => (
-            <div key={i} style={{ background: "rgba(255,255,255,0.2)", borderRadius: 10, padding: "6px 12px", fontSize: 12, color: "#fff" }}>
-              {icon} {act}<br /><b>{name}</b>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div style={styles.tabs}>
-        {TABS.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)} style={styles.tab(tab === t.key, t.color)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <div style={styles.section}>
-        {tab === "expand" && <HeatExpansionDiagram />}
-        {tab === "particle" && <ParticleDiagram />}
-        {tab === "transfer" && <HeatTransferDiagram />}
-        {tab === "insulation" && <InsulationDiagram />}
-        {tab === "summary" && <KeyPoints />}
-        {tab === "quiz" && <QuizSection />}
-      </div>
-    </div>
-  );
-}
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+document.addEventListener("DOMContentLoaded", () => {
+  // Init first tab
+  switchTab("expand");
+  // Render particle dots
+  renderDots();
+  // Render quiz
+  renderQuiz();
+  // Activate first diff filter btn style
+  const firstDiff = document.querySelector("#diffFilter .tab-btn");
+  if (firstDiff) {
+    firstDiff.style.background = firstDiff.dataset.color;
+    firstDiff.style.color = "#fff";
+    firstDiff.style.boxShadow = "0 3px 10px " + firstDiff.dataset.color + "55";
+  }
+});
+</script>
+</body>
+</html>
